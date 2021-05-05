@@ -35,7 +35,7 @@
 }
 
 .m-autocom-list li:hover, .m-autocom-selected-list li {
-    color: #fff;
+    color: inherit;
     background: inherit;
 }
 

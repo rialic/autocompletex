@@ -101,13 +101,27 @@ const MegaAutoComplete = (() => {
         }
 
         if (isLiElement) {
+            const itemSelected = element;
+            const itemSelectedText = itemSelected.textContent;
+
             const autocomplete = autocompleteWrapper.querySelector('.m-autocom');
             const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
             const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
+            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
+
+            const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
+            const hasSelectedValues = autocompleteSelectedValues.value;
+            const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
+
+            if(itemSelectedText === 'Não há resultados para essa pesquisa') return;
+
+            selectedList.push(itemSelectedText);
+            autocompleteSelectedValues.value = JSON.stringify(selectedList);
 
             autocomplete.value = '';
             autocompleteSelected.classList.add('-m-autocom-selected-show');
-            autocompleteSelectedCounter.textContent = `${this.selectedCounter += 1}`;
+            autocompleteSelectedCounter.dataset.total = totalSelected;
+            autocompleteSelectedCounter.textContent = totalSelected;
 
             removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
 
@@ -204,6 +218,8 @@ const MegaAutoComplete = (() => {
         const ulEl = makeElement.call(this, 'ul');
         const generateList = item => {
             const liEl = makeElement.call(this, 'li');
+
+            if (item === 'Não há resultados para essa pesquisa') liEl.style.cursor = 'default';
 
             liEl.textContent = item;
             ulEl.insertAdjacentElement('afterbegin', liEl);
