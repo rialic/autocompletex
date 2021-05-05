@@ -34,10 +34,10 @@
     cursor: pointer;
 }
 
-.m-autocom-list li:hover, .m-autocom-selected-list li {
+/* .m-autocom-list li:hover, .m-autocom-selected-list li {
     color: inherit;
     background: inherit;
-}
+} */
 
 .m-autocom-selected {
     position: absolute;

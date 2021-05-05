@@ -49,15 +49,17 @@ const MegaAutoComplete = (() => {
 
     MegaAutoComplete.prototype.enable = function () {
         initMegaAutoComplete.call(this);
+
+        makeClassCSS.call(this, '.m-autocom-list li:hover, .m-autocom-selected-list li', {'color': 'inherit', 'background': '#f1f1f1'});
     }
 
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocomWrapper => {
-            const autocompleteList = makeElement.call(this, 'div',  {'class' : 'm-autocom-list'});
-            const autocompleteSelected = makeElement.call(this, 'div',  {'class' : 'm-autocom-selected'});
-            const autocompleteSelectedCounter = makeElement.call(this, 'div',  {'class' : 'm-autocom-selected--counter', 'data-total': 0});
-            const autocompleteSelectedValues = makeElement.call(this, 'input',  {'class' : 'm-autocom-selected--values'});
-            const autocompleteSelectedList = makeElement.call(this, 'div',  {'class' : 'm-autocom-selected-list'});
+            const autocompleteList = makeElement.call(this, 'div', { 'class': 'm-autocom-list' });
+            const autocompleteSelected = makeElement.call(this, 'div', { 'class': 'm-autocom-selected' });
+            const autocompleteSelectedCounter = makeElement.call(this, 'div', { 'class': 'm-autocom-selected--counter', 'data-total': 0 });
+            const autocompleteSelectedValues = makeElement.call(this, 'input', { 'class': 'm-autocom-selected--values' });
+            const autocompleteSelectedList = makeElement.call(this, 'div', { 'class': 'm-autocom-selected-list' });
 
             autocomWrapper.insertAdjacentElement('beforeend', autocompleteList);
 
@@ -90,7 +92,7 @@ const MegaAutoComplete = (() => {
 
             const hasList = autocompleteList.querySelector('ul');
             const isShowingList = Array.from(autocomplete.classList).includes('-m-autocom-show') ||
-                                  Array.from(autocompleteList.classList).includes('-m-autocom-list-show');
+                Array.from(autocompleteList.classList).includes('-m-autocom-list-show');
 
             if (hasList && !isShowingList) {
                 autocomplete.classList.add('-m-autocom-show');
@@ -113,7 +115,7 @@ const MegaAutoComplete = (() => {
             const hasSelectedValues = autocompleteSelectedValues.value;
             const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
 
-            if(itemSelectedText === 'Não há resultados para essa pesquisa') return;
+            if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
 
             selectedList.push(itemSelectedText);
             autocompleteSelectedValues.value = JSON.stringify(selectedList);
@@ -148,7 +150,7 @@ const MegaAutoComplete = (() => {
             hideAutoCompleteList.call(this, autocomWrapper, autocomplete);
         };
 
-        if(hasAutoCompleteWrapperParent) {
+        if (hasAutoCompleteWrapperParent) {
             this.autocompleteWrapper.forEach(hideOtherAutoCompleteWrapper);
 
             return;
@@ -244,6 +246,28 @@ const MegaAutoComplete = (() => {
         }
 
         return;
+    }
+
+    const makeClassCSS = (selector, style = {}) => {
+        const isValidSelector = typeof selector === 'string' && Boolean(selector);
+        const isValidStyle = typeof style === 'object' && Boolean(style);
+
+        if(isValidSelector && isValidStyle) {
+            const head = document.querySelector('head');
+            const styleEl = document.createElement('style');
+            const styleList = Object.entries(style);
+            const defineStyleProperty = (acc, [property, value], index, list) => {
+                const isLastIndex = (list.length - 1) === index;
+
+                return `${acc}${property}: ${value};${!isLastIndex ? ' ' : ''}`
+            };
+            const properties = styleList.reduce(defineStyleProperty,'');
+            const cssClass = `${selector} {${properties}}`;
+
+            styleEl.appendChild(document.createTextNode(cssClass));
+            head.appendChild(styleEl);
+        }
+        
     }
 
     return new MegaAutoComplete();
