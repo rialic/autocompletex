@@ -1,12 +1,15 @@
 /*--------------------*\
   MEGA AUTOCOMPLETE
 \*--------------------*/
+
+/* AUTOCOMPLETE WRAPPER */
 .m-autocom-wrapper {
     position: relative;
     background: #fff;
     border-radius: .3125rem;
 }
 
+/* AUTOCOMPLETE LIST AND SELECTED LIST */
 .m-autocom-list, .m-autocom-selected-list {
     position: absolute;
     top: inherit;
@@ -34,11 +37,7 @@
     cursor: pointer;
 }
 
-/* .m-autocom-list li:hover, .m-autocom-selected-list li {
-    color: inherit;
-    background: inherit;
-} */
-
+/* AUTOCOMPLETE SELECTED CONTAINER */
 .m-autocom-selected {
     position: absolute;
     align-items: center;
@@ -46,6 +45,7 @@
     right: 0;
 }
 
+/* AUTOCOMPLETE SELECTED COUNTER AND VALUES */
 .m-autocom-selected--counter {
     margin-right: .3125rem;
     padding: .0625rem .3125rem;
@@ -74,16 +74,92 @@
     cursor: pointer;
 }
 
-.-m-autocom-selected-show .m-autocom-selected--counter {
-    border: .125rem solid red;
-    background: red;
+/* AUTOCOMPLETE LI ITEMS HOVER COLORS */
+.-m-autocom-primary ~ .m-autocom-list li:hover, 
+.-m-autocom-primary ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #3bafda;
+}
+
+.-m-autocom-secondary ~ .m-autocom-list li:hover, 
+.-m-autocom-secondary ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #6c757d;
+}
+
+.-m-autocom-success ~ .m-autocom-list li:hover, 
+.-m-autocom-success ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #78c350;
+}
+
+.-m-autocom-danger ~ .m-autocom-list li:hover, 
+.-m-autocom-danger ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #f1556c;
+}
+
+.-m-autocom-warning ~ .m-autocom-list li:hover, 
+.-m-autocom-warning ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #f7b84b;
+}
+
+.-m-autocom-info ~ .m-autocom-list li:hover, 
+.-m-autocom-info ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #37cde6;
+}
+
+.-m-autocom-dark ~ .m-autocom-list li:hover, 
+.-m-autocom-dark ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #323a46;
+}
+
+.-m-autocom-pink ~ .m-autocom-list li:hover, 
+.-m-autocom-pink ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #f06292;
+}
+
+.-m-autocom-lilac ~ .m-autocom-list li:hover, 
+.-m-autocom-lilac ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #526dee;
+}
+
+.-m-autocom-purple ~ .m-autocom-list li:hover, 
+.-m-autocom-purple ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #6559cc;
+}
+
+.-m-autocom-blue-darken ~ .m-autocom-list li:hover, 
+.-m-autocom-blue-darken ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #0D47A1;
+}
+
+.-m-autocom-orange ~ .m-autocom-list li:hover, 
+.-m-autocom-orange ~ .m-autocom-selected-list li {
+    color: #fff;
+    background: #ff6f00;
+}
+
+/* AUTOCOMPLETE SELECTED COLOR */
+/*DEFAULT COLOR*/
+.-m-autocom-selected-show 
+.m-autocom-selected--counter {
+    border: .125rem solid #555555;
+    background: #555555;
 }
 
 .-m-autocom-selected-show .m-autocom-selected--counter:before {
     content: '+';
     display: inline-block;
     margin-right: .1875rem;
-    font-weight: 800;
+    font-weight: bold;
 }
 
 .-m-autocom-selected-show .m-autocom-selected--counter:after {
@@ -95,4 +171,64 @@
     margin-left: .25rem;
     margin-bottom: .125rem;
     transform: rotate(45deg);
+}
+
+[data-bg-selected='primary'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #3bafda;
+    background: #3bafda;
+}
+
+[data-bg-selected='secondary'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #6c757d;
+    background: #6c757d;
+}
+
+[data-bg-selected='success'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #1abc9c;
+    background: #1abc9c;
+}
+
+[data-bg-selected='danger'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #f1556c;
+    background: #f1556c;
+}
+
+[data-bg-selected='warning'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #f7b84b;
+    background: #f7b84b;
+}
+
+[data-bg-selected='info'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #37cde6;
+    background: #37cde6;
+}
+
+[data-bg-selected='dark'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #323a46;
+    background: #323a46;
+}
+
+[data-bg-selected='pink'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #f06292;
+    background: #f06292;
+}
+
+[data-bg-selected='lilac'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #526dee;
+    background: #526dee;
+}
+
+[data-bg-selected='purple'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #6559cc;
+    background: #6559cc;
+}
+
+[data-bg-selected='blue-darken'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #0D47A1;
+    background: #0D47A1;
+}
+
+[data-bg-selected='orange'] ~ .-m-autocom-selected-show .m-autocom-selected--counter {
+    border: .125rem solid #ff6f00;
+    background: #ff6f00;
 }

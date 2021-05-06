@@ -50,7 +50,7 @@ const MegaAutoComplete = (() => {
     MegaAutoComplete.prototype.enable = function () {
         initMegaAutoComplete.call(this);
 
-        makeClassCSS.call(this, '.m-autocom-list li:hover, .m-autocom-selected-list li', {'color': 'inherit', 'background': '#f1f1f1'});
+        // makeClassCSS.call(this, '.m-autocom-list li:hover, .m-autocom-selected-list li', {'color': 'inherit', 'background': '#f1f1f1'});
     }
 
     function initMegaAutoComplete() {
@@ -248,27 +248,27 @@ const MegaAutoComplete = (() => {
         return;
     }
 
-    const makeClassCSS = (selector, style = {}) => {
-        const isValidSelector = typeof selector === 'string' && Boolean(selector);
-        const isValidStyle = typeof style === 'object' && Boolean(style);
+    // const makeClassCSS = (selector, style = {}) => {
+    //     const isValidSelector = typeof selector === 'string' && Boolean(selector);
+    //     const isValidStyle = typeof style === 'object' && Boolean(style);
 
-        if(isValidSelector && isValidStyle) {
-            const head = document.querySelector('head');
-            const styleEl = document.createElement('style');
-            const styleList = Object.entries(style);
-            const defineStyleProperty = (acc, [property, value], index, list) => {
-                const isLastIndex = (list.length - 1) === index;
+    //     if(isValidSelector && isValidStyle) {
+    //         const head = document.querySelector('head');
+    //         const styleEl = document.createElement('style');
+    //         const styleList = Object.entries(style);
+    //         const defineStyleProperty = (acc, [property, value], index, list) => {
+    //             const isLastIndex = (list.length - 1) === index;
 
-                return `${acc}${property}: ${value};${!isLastIndex ? ' ' : ''}`
-            };
-            const properties = styleList.reduce(defineStyleProperty,'');
-            const cssClass = `${selector} {${properties}}`;
+    //             return `${acc}${property}: ${value};${!isLastIndex ? ' ' : ''}`
+    //         };
+    //         const properties = styleList.reduce(defineStyleProperty,'');
+    //         const cssClass = `${selector} {${properties}}`;
 
-            styleEl.appendChild(document.createTextNode(cssClass));
-            head.appendChild(styleEl);
-        }
+    //         styleEl.appendChild(document.createTextNode(cssClass));
+    //         head.appendChild(styleEl);
+    //     }
         
-    }
+    // }
 
     return new MegaAutoComplete();
 })();
