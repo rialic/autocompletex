@@ -87,7 +87,7 @@
     background: #6c757d;
 }
 
-.-m-autocom-success ~ .m-autocom-list li:hover, 
+.-m-autocom-success ~ .m-autocom-list li:hover,
 .-m-autocom-success ~ .m-autocom-selected-list li {
     color: #fff;
     background: #78c350;
@@ -129,7 +129,8 @@
     background: #526dee;
 }
 
-.-m-autocom-purple ~ .m-autocom-list li:hover, 
+.-m-autocom-purple ~ .m-autocom-list li:hover,
+.-m-autocom-purple ~ .m-autocom-list li.selected,
 .-m-autocom-purple ~ .m-autocom-selected-list li {
     color: #fff;
     background: #6559cc;

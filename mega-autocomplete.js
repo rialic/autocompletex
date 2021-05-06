@@ -49,8 +49,6 @@ const MegaAutoComplete = (() => {
 
     MegaAutoComplete.prototype.enable = function () {
         initMegaAutoComplete.call(this);
-
-        // makeClassCSS.call(this, '.m-autocom-list li:hover, .m-autocom-selected-list li', {'color': 'inherit', 'background': '#f1f1f1'});
     }
 
     function initMegaAutoComplete() {
@@ -165,10 +163,74 @@ const MegaAutoComplete = (() => {
         const autocompleteVal = autocomplete.value;
         const autocompleteValLenght = autocomplete.value.length;
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
-        // const keyPressed = event.keyCode;
-        // const isLetterKeyPressed = (keyPressed >= 65 && keyPressed <= 90); // Letter Keys
-        // const isSpecialKeyPressed = (keyPressed === 8 || keyPressed === 46 || keyPressed === 32); // Backspace/Delete and Space Keys
-        // const isValidKeyPressed = isLetterKeyPressed || isSpecialKeyPressed;
+
+        const keyPressed = event.keyCode;
+        const isArrowUpPressed = keyPressed === 38;
+        const isArrowDownPressed = keyPressed === 40;
+        const isArrowUpDownPressed = isArrowUpPressed || isArrowDownPressed;
+
+        // VERIFICA SE AS SETAS DO TECLADO BAIXO E CIMA FORAM PRESSIONADAS
+        if(isArrowUpDownPressed && hasMoreThanThreeLetters) {
+            const autocompleteList = Array.from(autocompleteWrapper.querySelectorAll('.m-autocom-list li'));
+            const hasSelectedItem = autocompleteList.some(liEl => Array.from(liEl.classList).includes('selected'));
+
+            if (hasSelectedItem) {
+                const selectedIndex = autocompleteList.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+
+                autocompleteList.forEach((liEl, index, list) => {
+                    const ulEl = liEl.parentElement;
+                    const scrollPos = liEl.offsetTop;
+                    const isFirstIndex = selectedIndex === 0;
+                    const isLastIndex = selectedIndex === list.length;
+
+                    if(isArrowUpPressed) {
+                        const isEqualIndex = (selectedIndex - 1) === index;
+
+                        if (isFirstIndex) return;
+
+                        if (isEqualIndex) {
+                            liEl.nextElementSibling.classList.remove('selected');
+                            liEl.classList.add('selected');
+
+                            ulEl.scrollTop = scrollPos;
+                        }
+                    }
+                    
+                    if(isArrowDownPressed) {
+                        const isEqualIndex = (selectedIndex + 1) === index;
+
+                        if (isLastIndex) return;
+
+                        if (isEqualIndex) {
+                            liEl.previousElementSibling.classList.remove('selected');
+                            liEl.classList.add('selected');
+
+                            ulEl.scrollTop = scrollPos;
+                        }
+                    }
+
+                });
+
+                return;
+            }
+
+            const ulEl = autocompleteList[0].parentElement;
+            const firstLiEl = autocompleteList[0];
+            const lastLiEl = autocompleteList[autocompleteList.length - 1];
+
+            // SE NÃO TIVER ITEM SELECIONADO E A SETA PRA BAIXO FOR CLICADA, ENTÃO SELECIONA O PRIMEIRO
+            if (isArrowDownPressed) {
+                firstLiEl.classList.add('selected');
+            }
+
+            // SE NÃO TIVER ITEM SELECIONADO E A SETA PRA CIMA FOR CLICADA, ENTÃO SELECIONA O ÚLTIMO
+            if (isArrowUpPressed) {
+                ulEl.scrollTop = lastLiEl.offsetTop;
+                lastLiEl.classList.add('selected');
+            }
+
+            return;
+        }
 
         if (autocompleteVal && hasMoreThanThreeLetters) {
             const generateFiltredList = (acc, item) => {
@@ -247,28 +309,6 @@ const MegaAutoComplete = (() => {
 
         return;
     }
-
-    // const makeClassCSS = (selector, style = {}) => {
-    //     const isValidSelector = typeof selector === 'string' && Boolean(selector);
-    //     const isValidStyle = typeof style === 'object' && Boolean(style);
-
-    //     if(isValidSelector && isValidStyle) {
-    //         const head = document.querySelector('head');
-    //         const styleEl = document.createElement('style');
-    //         const styleList = Object.entries(style);
-    //         const defineStyleProperty = (acc, [property, value], index, list) => {
-    //             const isLastIndex = (list.length - 1) === index;
-
-    //             return `${acc}${property}: ${value};${!isLastIndex ? ' ' : ''}`
-    //         };
-    //         const properties = styleList.reduce(defineStyleProperty,'');
-    //         const cssClass = `${selector} {${properties}}`;
-
-    //         styleEl.appendChild(document.createTextNode(cssClass));
-    //         head.appendChild(styleEl);
-    //     }
-        
-    // }
 
     return new MegaAutoComplete();
 })();
