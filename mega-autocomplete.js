@@ -5,8 +5,6 @@ const MegaAutoComplete = (() => {
     /**
      * CRIAR LISTA PARA OS SELETECTED ELEMENTS ITEMS DO SEARCH FIELD (MOSTRAR E EXCLUIR ITENS DA LISTA)
      * A LISTA SELECIONADA DEVE POSSUIR UM ARRAY DOS ITENS SELECIONADOS PARA SEREM ENVIADOS AO SERVIDOR
-     * ARMAZENAR O OBJETO DE RAÇA DO CACHORRO NO LI E DEPOIS SAVAR EM UMA CONST DO JS;
-     * DIGITAÇÃO DE NÚMEROS NÃO FUNCIONA PARA CAMPOS EM MOBILE (KEY PRESS) A PARTIR DA LINHA 93
      * */
 
     function MegaAutoComplete() {
@@ -25,18 +23,20 @@ const MegaAutoComplete = (() => {
         const hasUrl = Boolean(options.url);
         const hasMethod = Boolean(options.method);
         const hasData = Boolean(options.data);
-        const hasFilter = Boolean(options.filter);
+        const hasFilter = Boolean(options.matchFilter);
 
         const isAutoComplete = Array.from(this.classList).includes('m-autocom');
         const isInputTag = this.tagName === 'INPUT';
 
+        
         if (hasUrl && isAutoComplete && isInputTag) {
             megaAutoComplete.options.url = options.url;
             megaAutoComplete.options.method = hasMethod ? options.method : 'GET';
             megaAutoComplete.options.data = hasData ? options.data : '';
-            megaAutoComplete.options.filter = hasFilter;
+            megaAutoComplete.options.matchFilter = hasFilter;
             megaAutoComplete.options.getVal = options.getVal;
 
+            return;
             // megaAutoComplete.suggestions = [
             //     "Channel",
             //     "CodingLab",
@@ -72,6 +72,8 @@ const MegaAutoComplete = (() => {
             //     "Vira Lata - (SRD) Sem Raça Definida no geral",
             // ];
         }
+
+        return; 
     }
 
     function initMegaAutoComplete() {
@@ -132,21 +134,35 @@ const MegaAutoComplete = (() => {
             const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
             const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
 
-            const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
-            const hasSelectedValues = autocompleteSelectedValues.value;
-            const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
+            const isMultipleInput = autocomplete.hasAttribute('multiple');
 
             if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
 
-            selectedList.push(itemSelectedText);
-            autocompleteSelectedValues.value = JSON.stringify(selectedList);
+            if (isMultipleInput) {
+                const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
+                const hasSelectedValues = autocompleteSelectedValues.value;
+                const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
+                const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
 
-            autocomplete.value = '';
-            autocompleteSelected.classList.add('-m-autocom-selected-show');
-            autocompleteSelectedCounter.dataset.total = totalSelected;
-            autocompleteSelectedCounter.textContent = totalSelected;
+                autocomplete.value = '';
 
-            removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+                if (!isItemAlreadySelected) {
+                    selectedList.push(itemSelectedText.trim());
+                    autocompleteSelectedValues.value = JSON.stringify(selectedList);
+
+                    autocompleteSelected.classList.add('-m-autocom-selected-show');
+                    autocompleteSelectedCounter.dataset.total = totalSelected;
+                    autocompleteSelectedCounter.textContent = totalSelected;
+                }
+
+                removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+
+                return;
+            }
+
+            autocomplete.value = itemSelectedText;
+            autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);  
+            removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);          
 
             return;
         }
@@ -185,6 +201,7 @@ const MegaAutoComplete = (() => {
         const autocomplete = event.target;
         const autocompleteVal = autocomplete.value;
         const autocompleteValLenght = autocomplete.value.length;
+        const hasUrl = Boolean(this.options.url);
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
 
         const keyPressed = event.keyCode;
@@ -255,20 +272,19 @@ const MegaAutoComplete = (() => {
             return;
         }
 
-        if (autocompleteVal && hasMoreThanThreeLetters) {
+        if (autocompleteVal && hasMoreThanThreeLetters && hasUrl) {
             clearTimeout(this.timeoutId);
 
             this.timeoutId = setTimeout(async () => {
                 let filteredList;
-                const url = `${this.options.url}${autocompleteVal}`;
-                const responseData = await fetchData.call(this, url, this.options.data);
+                const method = this.options.method;
+                const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
+                // const responseData = await fetchData.call(this, url, this.options.data);
+                // const hasRequestError = responseData.status === 'error';
                 const generateList = item => {
-                    console.log('Entrou List');
-
                     return item;
                 };
                 const generateFiltredList = (acc, item) => {
-                    console.log('Entrou Filter List');
                     const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
                     const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
     
@@ -281,16 +297,52 @@ const MegaAutoComplete = (() => {
                     return acc;
                 };
 
-                this.suggestions = [responseData];
 
-                filteredList = (this.options.filter) 
+                // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
+
+                this.suggestions = [
+                        "Channel",
+                        "CodingLab",
+                        "CodingNepal",
+                        "YouTube",
+                        "YouTuber",
+                        "YouTube Channel",
+                        "Blogger",
+                        "Bollywood",
+                        "Vlogger",
+                        "Vechiles",
+                        "Facebook",
+                        "Freelancer",
+                        "Facebook Page",
+                        "Designer",
+                        "Developer",
+                        "Web Designer",
+                        "Web Developer",
+                        "Login Form in HTML & CSS",
+                        "How to learn HTML & CSS",
+                        "How to learn JavaScript",
+                        "How to became Freelancer",
+                        "How to became Web Designer",
+                        "How to start Gaming Channel",
+                        "How to start YouTube Channel",
+                        "How to start Programing",
+                        "How to become smart person",
+                        "How to think fast",
+                        "How can I become a day trader",
+                        "How to lose weight",
+                        "What does HTML stands for?",
+                        "What does CSS stands for?",
+                        "Vira Lata - (SRD) Sem Raça Definida no geral",
+                    ]
+
+                filteredList = (this.options.matchFilter) 
                                     ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
-                                    : this.suggestions.map(generateList); // TODO RIALIC E SE NÃO ACHAR A RESPOSTA NA API DEVOLVER Não há resultados para essa pesquisa
+                                    : this.suggestions.map(generateList);
 
                 removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
                 mountAutoCompleteList.call(this, autocompleteWrapper, filteredList);
                 showAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
-            }, 1200);
+            }, 1150);
 
             return;
         }
@@ -325,8 +377,9 @@ const MegaAutoComplete = (() => {
         const ulEl = makeElement.call(this, 'ul');
         const generateList = item => {
             const liEl = makeElement.call(this, 'li');
+            const hasNoResult = item === 'Não há resultados para essa pesquisa';
 
-            if (item === 'Não há resultados para essa pesquisa') liEl.style.cursor = 'default';
+            if (hasNoResult) liEl.style.cursor = 'default';
 
             liEl.textContent = item;
             ulEl.insertAdjacentElement('afterbegin', liEl);
@@ -348,7 +401,7 @@ const MegaAutoComplete = (() => {
             const isStringGetVal = typeof this.options.getVal === 'string';
             const isFunctionGetVal = typeof this.options.getVal === 'function';
 
-            if (!response.ok) return {'status': 'error', 'message': 'Não foi possível obter os dados'};
+            if (!response.ok) throw new Error('Não foi possível obter os dados da requisição');
 
             if (hasGetVal) {
                 if (isStringGetVal) return (await response.json())[this.options.getVal];
@@ -386,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const autocomplete = document.querySelector('.m-autocom');
     const options = {
         url: 'https://pokeapi.co/api/v2/pokemon/',
+        matchFilter: true,
         getVal: 'name'
     };
 
