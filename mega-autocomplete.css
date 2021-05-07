@@ -37,6 +37,11 @@
     cursor: pointer;
 }
 
+.m-autocom-selected-list li {
+    padding: .25rem .5rem;
+    font-size: .875rem;
+}
+
 /* AUTOCOMPLETE SELECTED CONTAINER */
 .m-autocom-selected {
     position: absolute;
@@ -64,17 +69,21 @@
     border-bottom-right-radius: 0;
 }
 
-.-m-autocom-list-show {
-    display: block;
-}
-
 .-m-autocom-selected-show {
     display: flex;
     height: 100%;
     cursor: pointer;
 }
 
-/* AUTOCOMPLETE LI ITEMS HOVER COLORS */
+.-m-autocom-list-show, .-m-autocom-selected-list-show {
+    display: block;
+}
+
+/* AUTOCOMPLETE LI ITEMS WITH HOVER COLORS */
+.m-autocom-selected-list li:hover {
+    background-color: #f1f1f1;
+}
+
 .-m-autocom-primary ~ .m-autocom-list li:hover, 
 .-m-autocom-primary ~ .m-autocom-selected-list li {
     color: #fff;
@@ -130,8 +139,7 @@
 }
 
 .-m-autocom-purple ~ .m-autocom-list li:hover,
-.-m-autocom-purple ~ .m-autocom-list li.selected,
-.-m-autocom-purple ~ .m-autocom-selected-list li {
+.-m-autocom-purple ~ .m-autocom-list li.selected {
     color: #fff;
     background: #6559cc;
 }

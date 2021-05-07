@@ -139,6 +139,7 @@ const MegaAutoComplete = (() => {
             if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
 
             if (isMultipleInput) {
+                const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
                 const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
                 const hasSelectedValues = autocompleteSelectedValues.value;
                 const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
@@ -156,6 +157,8 @@ const MegaAutoComplete = (() => {
                 }
 
                 removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+                mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+                showAutoCompleteSelectedList.call(this, autocompleteWrapper);
 
                 return;
             }
@@ -277,6 +280,8 @@ const MegaAutoComplete = (() => {
 
             this.timeoutId = setTimeout(async () => {
                 let filteredList;
+                const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+
                 const method = this.options.method;
                 const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
                 // const responseData = await fetchData.call(this, url, this.options.data);
@@ -340,7 +345,7 @@ const MegaAutoComplete = (() => {
                                     : this.suggestions.map(generateList);
 
                 removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
-                mountAutoCompleteList.call(this, autocompleteWrapper, filteredList);
+                mountAutoCompleteList.call(this, autocompleteList, filteredList);
                 showAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
             }, 1150);
 
@@ -372,8 +377,13 @@ const MegaAutoComplete = (() => {
         autocompleteList.classList.add('-m-autocom-list-show');
     }
 
-    function mountAutoCompleteList(autocompleteWrapper, filteredList) {
-        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+    function showAutoCompleteSelectedList(autocompleteWrapper) {
+        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+
+        autocompleteList.classList.add('-m-autocom-selected-list-show');
+    }
+
+    function mountAutoCompleteList(autocompleteList, filteredList) {
         const ulEl = makeElement.call(this, 'ul');
         const generateList = item => {
             const liEl = makeElement.call(this, 'li');
@@ -387,6 +397,26 @@ const MegaAutoComplete = (() => {
 
         filteredList.forEach(generateList);
         autocompleteList.insertAdjacentElement('afterbegin', ulEl);
+    }
+
+    function mountAutoCompleteSelectedList(autocompleteSelectedList, filteredList) {
+        const ulEl = makeElement.call(this, 'ul');
+        const divEl = makeElement.call(this, 'div', {class: 'd-flex justify-content-end'});
+        const buttonEl = makeElement.call(this, 'button', {class: 'btn btn-sm btn-link text-decoration-none'})
+        const generateList = item => {
+            const liEl = makeElement.call(this, 'li');
+        
+            liEl.textContent = item;
+
+            ulEl.insertAdjacentElement('afterbegin', liEl);
+        };
+
+        filteredList.forEach(generateList);
+        buttonEl.textContent = 'Limpar Lista';
+
+        divEl.insertAdjacentElement('afterbegin', buttonEl);
+        autocompleteSelectedList.insertAdjacentElement('afterbegin', ulEl);
+        autocompleteSelectedList.insertAdjacentElement('beforeend', divEl);
     }
 
     async function fetchData(url, data) {
