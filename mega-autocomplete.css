@@ -60,9 +60,9 @@
     color: #fff;
 }
 
-.m-autocom-selected--values {
-    display: none;
-}
+    .m-autocom-selected--values {
+        display: none;
+    }
 
 .-m-autocom-show {
     border-bottom-left-radius: 0;
@@ -84,56 +84,56 @@
     background-color: #f1f1f1;
 }
 
-.-m-autocom-primary ~ .m-autocom-list li:hover, 
-.-m-autocom-primary ~ .m-autocom-selected-list li {
+.-m-autocom-primary ~ .m-autocom-list li:hover,
+.-m-autocom-primary ~ .m-autocom-list li.selected {
     color: #fff;
     background: #3bafda;
 }
 
-.-m-autocom-secondary ~ .m-autocom-list li:hover, 
-.-m-autocom-secondary ~ .m-autocom-selected-list li {
+.-m-autocom-secondary ~ .m-autocom-list li:hover,
+.-m-autocom-secondary ~ .m-autocom-list li.selected {
     color: #fff;
     background: #6c757d;
 }
 
 .-m-autocom-success ~ .m-autocom-list li:hover,
-.-m-autocom-success ~ .m-autocom-selected-list li {
+.-m-autocom-success ~ .m-autocom-list li.selected {
     color: #fff;
     background: #78c350;
 }
 
-.-m-autocom-danger ~ .m-autocom-list li:hover, 
-.-m-autocom-danger ~ .m-autocom-selected-list li {
+.-m-autocom-danger ~ .m-autocom-list li:hover,
+.-m-autocom-danger ~ .m-autocom-list li.selected {
     color: #fff;
     background: #f1556c;
 }
 
-.-m-autocom-warning ~ .m-autocom-list li:hover, 
-.-m-autocom-warning ~ .m-autocom-selected-list li {
+.-m-autocom-warning ~ .m-autocom-list li:hover,
+.-m-autocom-warning ~ .m-autocom-list li.selected {
     color: #fff;
     background: #f7b84b;
 }
 
-.-m-autocom-info ~ .m-autocom-list li:hover, 
-.-m-autocom-info ~ .m-autocom-selected-list li {
+.-m-autocom-info ~ .m-autocom-list li:hover,
+.-m-autocom-info ~ .m-autocom-list li.selected {
     color: #fff;
     background: #37cde6;
 }
 
-.-m-autocom-dark ~ .m-autocom-list li:hover, 
-.-m-autocom-dark ~ .m-autocom-selected-list li {
+.-m-autocom-dark ~ .m-autocom-list li:hover,
+.-m-autocom-dark ~ .m-autocom-list li.selected {
     color: #fff;
     background: #323a46;
 }
 
-.-m-autocom-pink ~ .m-autocom-list li:hover, 
-.-m-autocom-pink ~ .m-autocom-selected-list li {
+.-m-autocom-pink ~ .m-autocom-list li:hover,
+.-m-autocom-pink ~ .m-autocom-list li.selected {
     color: #fff;
     background: #f06292;
 }
 
-.-m-autocom-lilac ~ .m-autocom-list li:hover, 
-.-m-autocom-lilac ~ .m-autocom-selected-list li {
+.-m-autocom-lilac ~ .m-autocom-list li:hover,
+.-m-autocom-lilac ~ .m-autocom-list li.selected {
     color: #fff;
     background: #526dee;
 }
@@ -144,14 +144,14 @@
     background: #6559cc;
 }
 
-.-m-autocom-blue-darken ~ .m-autocom-list li:hover, 
-.-m-autocom-blue-darken ~ .m-autocom-selected-list li {
+.-m-autocom-blue-darken ~ .m-autocom-list li:hover,
+.-m-autocom-blue-darken ~ .m-autocom-list li.selected {
     color: #fff;
     background: #0D47A1;
 }
 
-.-m-autocom-orange ~ .m-autocom-list li:hover, 
-.-m-autocom-orange ~ .m-autocom-selected-list li {
+.-m-autocom-orange ~ .m-autocom-list li:hover,
+.-m-autocom-orange ~ .m-autocom-list li.selected {
     color: #fff;
     background: #ff6f00;
 }

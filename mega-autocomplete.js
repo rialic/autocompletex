@@ -78,11 +78,29 @@ const MegaAutoComplete = (() => {
 
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocomWrapper => {
+            const autocomplete = autocomWrapper.querySelector('.m-autocom');
+            const hasAutoCompleteNameAttr = autocomplete.hasAttribute('name');
+            const hasAutoCompleteIdAttr = autocomplete.hasAttribute('id');
+
             const autocompleteList = makeElement.call(this, 'div', { 'class': 'm-autocom-list' });
             const autocompleteSelected = makeElement.call(this, 'div', { 'class': 'm-autocom-selected' });
             const autocompleteSelectedCounter = makeElement.call(this, 'div', { 'class': 'm-autocom-selected--counter', 'data-total': 0 });
             const autocompleteSelectedValues = makeElement.call(this, 'input', { 'class': 'm-autocom-selected--values' });
             const autocompleteSelectedList = makeElement.call(this, 'div', { 'class': 'm-autocom-selected-list' });
+
+            if (hasAutoCompleteIdAttr) {
+                const autocompleteIdAttr = autocomplete.getAttribute('id');
+
+                autocomplete.removeAttribute('id');
+                autocompleteSelectedValues.setAttribute('id', autocompleteIdAttr);
+            }
+
+            if (hasAutoCompleteNameAttr) {
+                const autocompleteNameAttr = autocomplete.getAttribute('name');
+
+                autocomplete.removeAttribute('name');
+                autocompleteSelectedValues.setAttribute('name', autocompleteNameAttr);
+            }
 
             autocomWrapper.insertAdjacentElement('beforeend', autocompleteList);
 
@@ -105,27 +123,40 @@ const MegaAutoComplete = (() => {
     function handleAutoCompleteWrapperClickEvent(event) {
         const element = event.target;
         const autocompleteWrapper = element.closest('.m-autocom-wrapper');
+        const autocomplete = autocompleteWrapper.querySelector('.m-autocom');
+        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
 
-        const isInputElement = element.tagName === 'INPUT';
-        const isLiElement = element.tagName === 'LI';
+        const isAutoCompleteEl = Array.from(element.classList).includes('m-autocom');
+        const isAutoCompleteListEl = Boolean(element.closest('.m-autocom-list'));
+        const AutoCompleteSelectedEl = Array.from(element.classList).includes('m-autocom-selected') || 
+                                       Array.from(element.classList).includes('m-autocom-selected--counter');
 
-        if (isInputElement) {
+        const isInputEl = element.tagName === 'INPUT';
+        const isLiInputEl = element.tagName === 'LI';
+        const isDivInputEl = element.tagName === 'DIV';
+
+        const isClickedAutoCompleteEl =  isInputEl && isAutoCompleteEl;
+        const isClickedLiAutoCompleteListEl = isLiInputEl && isAutoCompleteListEl;
+        const isClickedDivAutoCompleteSelectedEl = isDivInputEl && AutoCompleteSelectedEl;
+
+        if (isClickedAutoCompleteEl) {
             const autocomplete = element;
-            const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
 
             const hasList = autocompleteList.querySelector('ul');
             const isShowingList = Array.from(autocomplete.classList).includes('-m-autocom-show') ||
-                Array.from(autocompleteList.classList).includes('-m-autocom-list-show');
+                                  Array.from(autocompleteList.classList).includes('-m-autocom-list-show');
 
             if (hasList && !isShowingList) {
                 autocomplete.classList.add('-m-autocom-show');
                 autocompleteList.classList.add('-m-autocom-list-show');
             }
 
+            hideAutoCompleteSelectedList.call(this, autocompleteWrapper);
+
             return;
         }
 
-        if (isLiElement) {
+        if (isClickedLiAutoCompleteListEl) {
             const itemSelected = element;
             const itemSelectedText = itemSelected.textContent;
 
@@ -138,10 +169,11 @@ const MegaAutoComplete = (() => {
 
             if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
 
+            // INPUT MÚLTIPLO
             if (isMultipleInput) {
                 const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
                 const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
-                const hasSelectedValues = autocompleteSelectedValues.value;
+                const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
                 const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
                 const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
 
@@ -154,20 +186,27 @@ const MegaAutoComplete = (() => {
                     autocompleteSelected.classList.add('-m-autocom-selected-show');
                     autocompleteSelectedCounter.dataset.total = totalSelected;
                     autocompleteSelectedCounter.textContent = totalSelected;
+
+                    removeAutoCompleteSelectedList.call(this, autocompleteWrapper, autocomplete);
+                    mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
                 }
 
                 removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
-                mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
-                showAutoCompleteSelectedList.call(this, autocompleteWrapper);
 
                 return;
             }
 
+            //INPUT SIMPLES
             autocomplete.value = itemSelectedText;
-            autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);  
+            autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);
             removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);          
 
             return;
+        }
+
+        if (isClickedDivAutoCompleteSelectedEl) {
+            hideAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+            showAutoCompleteSelectedList.call(this, autocompleteWrapper);
         }
     }
 
@@ -182,12 +221,14 @@ const MegaAutoComplete = (() => {
 
             if (isDifferentAutoCompleteWrapper) { // SE FOR DIFERENTE, ENTÃO FECHA OS OUTROS AUTOCOMPLETE WRAPPER
                 hideAutoCompleteList.call(this, autocomWrapper, autocomplete);
+                hideAutoCompleteSelectedList.call(this, autocomWrapper);
             }
         };
         const hideAllAutoCompleteWrapper = autocomWrapper => {
             const autocomplete = autocomWrapper.querySelector('.m-autocom');
 
             hideAutoCompleteList.call(this, autocomWrapper, autocomplete);
+            hideAutoCompleteSelectedList.call(this, autocomWrapper);
         };
 
         if (hasAutoCompleteWrapperParent) {
@@ -363,11 +404,23 @@ const MegaAutoComplete = (() => {
         autocompleteList.classList.remove('-m-autocom-list-show');
     }
 
+    function removeAutoCompleteSelectedList(autocompleteWrapper, autocomplete) {
+        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+
+        autocompleteSelectedList.innerHTML = '';
+    }
+
     function hideAutoCompleteList(autocompleteWrapper, autocomplete) {
         const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
 
         autocomplete.classList.remove('-m-autocom-show');
         autocompleteList.classList.remove('-m-autocom-list-show');
+    }
+
+    function hideAutoCompleteSelectedList(autocompleteWrapper) {
+        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+
+        autocompleteSelectedList.classList.remove('-m-autocom-selected-list-show');
     }
 
     function showAutoCompleteList(autocompleteWrapper, autocomplete) {
@@ -378,9 +431,9 @@ const MegaAutoComplete = (() => {
     }
 
     function showAutoCompleteSelectedList(autocompleteWrapper) {
-        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
 
-        autocompleteList.classList.add('-m-autocom-selected-list-show');
+        autocompleteSelectedList.classList.add('-m-autocom-selected-list-show');
     }
 
     function mountAutoCompleteList(autocompleteList, filteredList) {
@@ -400,9 +453,8 @@ const MegaAutoComplete = (() => {
     }
 
     function mountAutoCompleteSelectedList(autocompleteSelectedList, filteredList) {
-        const ulEl = makeElement.call(this, 'ul');
-        const divEl = makeElement.call(this, 'div', {class: 'd-flex justify-content-end'});
-        const buttonEl = makeElement.call(this, 'button', {class: 'btn btn-sm btn-link text-decoration-none'})
+        let ulEl = (autocompleteSelectedList.hasChildNodes()) ? autocompleteSelectedList.querySelector('ul') 
+                                                              : makeElement.call(this, 'ul');
         const generateList = item => {
             const liEl = makeElement.call(this, 'li');
         
@@ -412,11 +464,17 @@ const MegaAutoComplete = (() => {
         };
 
         filteredList.forEach(generateList);
-        buttonEl.textContent = 'Limpar Lista';
 
-        divEl.insertAdjacentElement('afterbegin', buttonEl);
-        autocompleteSelectedList.insertAdjacentElement('afterbegin', ulEl);
-        autocompleteSelectedList.insertAdjacentElement('beforeend', divEl);
+        if (!autocompleteSelectedList.hasChildNodes()) {
+            const divEl = makeElement.call(this, 'div', {class: 'd-flex justify-content-end'});
+            const buttonEl = makeElement.call(this, 'button', {class: 'btn btn-sm btn-link text-decoration-none'});
+
+            buttonEl.textContent = 'Limpar Lista';
+
+            autocompleteSelectedList.insertAdjacentElement('afterbegin', ulEl);
+            autocompleteSelectedList.insertAdjacentElement('beforeend', divEl);
+            divEl.insertAdjacentElement('afterbegin', buttonEl);
+        }
     }
 
     async function fetchData(url, data) {
