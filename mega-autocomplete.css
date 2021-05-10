@@ -31,7 +31,7 @@
     overflow-y: auto;
 }
 
-.m-autocom-list li, .m-autocom-selected-list li {
+.m-autocom-list li {
     padding: .25rem .5rem;
     font-size: .875rem;
     cursor: pointer;
@@ -40,6 +40,33 @@
 .m-autocom-selected-list li {
     padding: .25rem .5rem;
     font-size: .875rem;
+    border-bottom: 1px solid #d4d4d4;
+}
+
+.m-autocom-selected-list li div.m-autocom-remove-item {
+    position: relative;
+    background: #fff;
+    width: 10px;
+    height: 14px;
+    cursor: pointer;
+}
+
+.m-autocom-selected-list li div.m-autocom-remove-item:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    height: 14px;
+    border-left: 2px solid #f1556c;
+    transform: rotate(45deg);
+}
+
+.m-autocom-selected-list li div.m-autocom-remove-item:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    height: 14px;
+    border-left: 2px solid #f1556c;
+    transform: rotate(-45deg);
 }
 
 /* AUTOCOMPLETE SELECTED CONTAINER */
@@ -60,9 +87,9 @@
     color: #fff;
 }
 
-    .m-autocom-selected--values {
-        display: none;
-    }
+.m-autocom-selected--values {
+    display: none;
+}
 
 .-m-autocom-show {
     border-bottom-left-radius: 0;
@@ -80,7 +107,7 @@
 }
 
 /* AUTOCOMPLETE LI ITEMS WITH HOVER COLORS */
-.m-autocom-selected-list li:hover {
+.m-autocom-selected-list li:hover, .m-autocom-selected-list li:hover div.m-autocom-remove-item{
     background-color: #f1f1f1;
 }
 

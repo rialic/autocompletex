@@ -79,8 +79,8 @@ const MegaAutoComplete = (() => {
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocomWrapper => {
             const autocomplete = autocomWrapper.querySelector('.m-autocom');
-            const hasAutoCompleteNameAttr = autocomplete.hasAttribute('name');
-            const hasAutoCompleteIdAttr = autocomplete.hasAttribute('id');
+            // const hasAutoCompleteNameAttr = autocomplete.hasAttribute('name');
+            // const hasAutoCompleteIdAttr = autocomplete.hasAttribute('id');
 
             const autocompleteList = makeElement.call(this, 'div', { 'class': 'm-autocom-list' });
             const autocompleteSelected = makeElement.call(this, 'div', { 'class': 'm-autocom-selected' });
@@ -88,19 +88,18 @@ const MegaAutoComplete = (() => {
             const autocompleteSelectedValues = makeElement.call(this, 'input', { 'class': 'm-autocom-selected--values' });
             const autocompleteSelectedList = makeElement.call(this, 'div', { 'class': 'm-autocom-selected-list' });
 
-            if (hasAutoCompleteIdAttr) {
-                const autocompleteIdAttr = autocomplete.getAttribute('id');
+            // if (hasAutoCompleteIdAttr) {
+            //     const autocompleteIdAttr = autocomplete.getAttribute('id');
 
-                autocomplete.removeAttribute('id');
-                autocompleteSelectedValues.setAttribute('id', autocompleteIdAttr);
-            }
+            //     autocompleteSelectedValues.setAttribute('id', autocompleteIdAttr);
+            // }
 
-            if (hasAutoCompleteNameAttr) {
-                const autocompleteNameAttr = autocomplete.getAttribute('name');
+            // if (hasAutoCompleteNameAttr) {
+            //     const autocompleteNameAttr = autocomplete.getAttribute('name');
 
-                autocomplete.removeAttribute('name');
-                autocompleteSelectedValues.setAttribute('name', autocompleteNameAttr);
-            }
+            //     autocomplete.removeAttribute('name');
+            //     autocompleteSelectedValues.setAttribute('name', autocompleteNameAttr);
+            // }
 
             autocomWrapper.insertAdjacentElement('beforeend', autocompleteList);
 
@@ -130,6 +129,7 @@ const MegaAutoComplete = (() => {
         const isAutoCompleteListEl = Boolean(element.closest('.m-autocom-list'));
         const AutoCompleteSelectedEl = Array.from(element.classList).includes('m-autocom-selected') || 
                                        Array.from(element.classList).includes('m-autocom-selected--counter');
+        const isAutoCompleteRemoveItemEl = Array.from(element.classList).includes('m-autocom-remove-item');
 
         const isInputEl = element.tagName === 'INPUT';
         const isLiInputEl = element.tagName === 'LI';
@@ -138,6 +138,7 @@ const MegaAutoComplete = (() => {
         const isClickedAutoCompleteEl =  isInputEl && isAutoCompleteEl;
         const isClickedLiAutoCompleteListEl = isLiInputEl && isAutoCompleteListEl;
         const isClickedDivAutoCompleteSelectedEl = isDivInputEl && AutoCompleteSelectedEl;
+        const isClickedDivAutoCompleteRemoveItemEl = isDivInputEl && isAutoCompleteRemoveItemEl;
 
         if (isClickedAutoCompleteEl) {
             const autocomplete = element;
@@ -207,6 +208,37 @@ const MegaAutoComplete = (() => {
         if (isClickedDivAutoCompleteSelectedEl) {
             hideAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
             showAutoCompleteSelectedList.call(this, autocompleteWrapper);
+        }
+
+        if (isClickedDivAutoCompleteRemoveItemEl) {
+            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
+            const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
+            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
+
+            const itemSelectedText = element.previousElementSibling.textContent;
+            const totalSelected = Number(autocompleteSelectedCounter.dataset.total) - 1;
+            const isEmptyTotalSelected = totalSelected === 0;
+
+            let selectedList = JSON.parse(autocompleteSelectedValues.value);
+
+            selectedList = selectedList.filter(selecteItem => selecteItem !== itemSelectedText);
+
+            autocompleteSelectedValues.value = (isEmptyTotalSelected) ? '' : JSON.stringify(selectedList);
+            autocompleteSelectedCounter.dataset.total = totalSelected;
+            autocompleteSelectedCounter.textContent = (isEmptyTotalSelected) ? '' : totalSelected;
+
+            removeAutoCompleteSelectedList.call(this, autocompleteWrapper, autocomplete);
+            
+            if (isEmptyTotalSelected) {
+                autocompleteSelected.classList.remove('-m-autocom-selected-show');
+                hideAutoCompleteSelectedList.call(this, autocompleteWrapper);
+                
+                return;
+            }
+            
+                mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+                showAutoCompleteSelectedList.call(this, autocompleteWrapper);
         }
     }
 
@@ -456,11 +488,18 @@ const MegaAutoComplete = (() => {
         let ulEl = (autocompleteSelectedList.hasChildNodes()) ? autocompleteSelectedList.querySelector('ul') 
                                                               : makeElement.call(this, 'ul');
         const generateList = item => {
+            const divWrapperEl = makeElement.call(this, 'div', {class: 'd-flex align-items-center justify-content-between'});
+            const divRemoveIconEl = makeElement.call(this, 'div', {class: 'm-autocom-remove-item'});
+            const spanTextEl = makeElement.call(this, 'span');
             const liEl = makeElement.call(this, 'li');
         
-            liEl.textContent = item;
+            divRemoveIconEl.classList.add('m-autocom-remove-item');
+            spanTextEl.textContent = item;
 
             ulEl.insertAdjacentElement('afterbegin', liEl);
+            liEl.insertAdjacentElement('beforeend', divWrapperEl);
+            divWrapperEl.insertAdjacentElement('afterbegin', spanTextEl);
+            divWrapperEl.insertAdjacentElement('beforeend', divRemoveIconEl);
         };
 
         filteredList.forEach(generateList);
@@ -473,6 +512,7 @@ const MegaAutoComplete = (() => {
 
             autocompleteSelectedList.insertAdjacentElement('afterbegin', ulEl);
             autocompleteSelectedList.insertAdjacentElement('beforeend', divEl);
+
             divEl.insertAdjacentElement('afterbegin', buttonEl);
         }
     }
@@ -520,7 +560,9 @@ const MegaAutoComplete = (() => {
         return;
     }
 
-    return megaAutoComplete;
+    // return megaAutoComplete;
+
+    document.addEventListener('DOMContentLoaded', () => megaAutoComplete.enable());
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -531,6 +573,5 @@ document.addEventListener('DOMContentLoaded', () => {
         getVal: 'name'
     };
 
-    MegaAutoComplete.enable();
     autocomplete.megaAutoComplete(options);
 });
