@@ -1,12 +1,6 @@
 const MegaAutoComplete = (() => {
     const megaAutoComplete = new MegaAutoComplete()
 
-    // TODO RIALIC
-    /**
-     * CRIAR LISTA PARA OS SELETECTED ELEMENTS ITEMS DO SEARCH FIELD (MOSTRAR E EXCLUIR ITENS DA LISTA)
-     * A LISTA SELECIONADA DEVE POSSUIR UM ARRAY DOS ITENS SELECIONADOS PARA SEREM ENVIADOS AO SERVIDOR
-     * */
-
     function MegaAutoComplete() {
         this.options = {};
         this.suggestions;
@@ -37,40 +31,6 @@ const MegaAutoComplete = (() => {
             megaAutoComplete.options.getVal = options.getVal;
 
             return;
-            // megaAutoComplete.suggestions = [
-            //     "Channel",
-            //     "CodingLab",
-            //     "CodingNepal",
-            //     "YouTube",
-            //     "YouTuber",
-            //     "YouTube Channel",
-            //     "Blogger",
-            //     "Bollywood",
-            //     "Vlogger",
-            //     "Vechiles",
-            //     "Facebook",
-            //     "Freelancer",
-            //     "Facebook Page",
-            //     "Designer",
-            //     "Developer",
-            //     "Web Designer",
-            //     "Web Developer",
-            //     "Login Form in HTML & CSS",
-            //     "How to learn HTML & CSS",
-            //     "How to learn JavaScript",
-            //     "How to became Freelancer",
-            //     "How to became Web Designer",
-            //     "How to start Gaming Channel",
-            //     "How to start YouTube Channel",
-            //     "How to start Programing",
-            //     "How to become smart person",
-            //     "How to think fast",
-            //     "How can I become a day trader",
-            //     "How to lose weight",
-            //     "What does HTML stands for?",
-            //     "What does CSS stands for?",
-            //     "Vira Lata - (SRD) Sem Raça Definida no geral",
-            // ];
         }
 
         return; 
@@ -130,26 +90,29 @@ const MegaAutoComplete = (() => {
         const AutoCompleteSelectedEl = Array.from(element.classList).includes('m-autocom-selected') || 
                                        Array.from(element.classList).includes('m-autocom-selected--counter');
         const isAutoCompleteRemoveItemEl = Array.from(element.classList).includes('m-autocom-remove-item');
+        const isButtonClearListEl = Array.from(element.classList).includes('btn-link');
 
         const isInputEl = element.tagName === 'INPUT';
         const isLiInputEl = element.tagName === 'LI';
         const isDivInputEl = element.tagName === 'DIV';
+        const isButtonEl = element.tagName === 'BUTTON';
 
         const isClickedAutoCompleteEl =  isInputEl && isAutoCompleteEl;
         const isClickedLiAutoCompleteListEl = isLiInputEl && isAutoCompleteListEl;
         const isClickedDivAutoCompleteSelectedEl = isDivInputEl && AutoCompleteSelectedEl;
         const isClickedDivAutoCompleteRemoveItemEl = isDivInputEl && isAutoCompleteRemoveItemEl;
+        const isClickedButtonClearListEl = isButtonEl && isButtonClearListEl;
 
         if (isClickedAutoCompleteEl) {
             const autocomplete = element;
 
             const hasList = autocompleteList.querySelector('ul');
             const isShowingList = Array.from(autocomplete.classList).includes('-m-autocom-show') ||
-                                  Array.from(autocompleteList.classList).includes('-m-autocom-list-show');
+                                  Array.from(autocompleteList.classList).includes('-list-show');
 
             if (hasList && !isShowingList) {
                 autocomplete.classList.add('-m-autocom-show');
-                autocompleteList.classList.add('-m-autocom-list-show');
+                autocompleteList.classList.add('-list-show');
             }
 
             hideAutoCompleteSelectedList.call(this, autocompleteWrapper);
@@ -188,7 +151,7 @@ const MegaAutoComplete = (() => {
                     autocompleteSelectedCounter.dataset.total = totalSelected;
                     autocompleteSelectedCounter.textContent = totalSelected;
 
-                    removeAutoCompleteSelectedList.call(this, autocompleteWrapper, autocomplete);
+                    removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
                     mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
                 }
 
@@ -228,7 +191,7 @@ const MegaAutoComplete = (() => {
             autocompleteSelectedCounter.dataset.total = totalSelected;
             autocompleteSelectedCounter.textContent = (isEmptyTotalSelected) ? '' : totalSelected;
 
-            removeAutoCompleteSelectedList.call(this, autocompleteWrapper, autocomplete);
+            removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
             
             if (isEmptyTotalSelected) {
                 autocompleteSelected.classList.remove('-m-autocom-selected-show');
@@ -237,8 +200,23 @@ const MegaAutoComplete = (() => {
                 return;
             }
             
-                mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
-                showAutoCompleteSelectedList.call(this, autocompleteWrapper);
+            mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+            showAutoCompleteSelectedList.call(this, autocompleteWrapper);
+        }
+
+        if (isClickedButtonClearListEl) {
+            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
+            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
+            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
+
+            autocompleteSelectedCounter.dataset.total = 0;
+            autocompleteSelectedCounter.innerText = '';
+            autocompleteSelectedValues.value = '';
+
+            autocompleteSelected.classList.remove('-m-autocom-selected-show');
+            removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
+            hideAutoCompleteSelectedList.call(this, autocompleteWrapper);
+
         }
     }
 
@@ -246,6 +224,7 @@ const MegaAutoComplete = (() => {
         const element = event.target;
         const autocompleteWrapper = element.closest('.m-autocom-wrapper');
         const hasAutoCompleteWrapperParent = Boolean(autocompleteWrapper);
+        const isAutoCompleteRemoveItemEl = Array.from(element.classList).includes('m-autocom-remove-item');
 
         const hideOtherAutoCompleteWrapper = autocomWrapper => {
             const autocomplete = autocomWrapper.querySelector('.m-autocom');
@@ -262,6 +241,8 @@ const MegaAutoComplete = (() => {
             hideAutoCompleteList.call(this, autocomWrapper, autocomplete);
             hideAutoCompleteSelectedList.call(this, autocomWrapper);
         };
+
+        if (isAutoCompleteRemoveItemEl) return;
 
         if (hasAutoCompleteWrapperParent) {
             this.autocompleteWrapper.forEach(hideOtherAutoCompleteWrapper);
@@ -281,9 +262,66 @@ const MegaAutoComplete = (() => {
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
 
         const keyPressed = event.keyCode;
+        const isEnterPressed = keyPressed === 13;
         const isArrowUpPressed = keyPressed === 38;
         const isArrowDownPressed = keyPressed === 40;
         const isArrowUpDownPressed = isArrowUpPressed || isArrowDownPressed;
+
+        // VERIFICA SE O ENTER DO TECLADO FOI PRESSIONADO
+        if(isEnterPressed && autocompleteVal && hasMoreThanThreeLetters) {
+            const autocompleteList = Array.from(autocompleteWrapper.querySelectorAll('.m-autocom-list li'));
+            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
+            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
+            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
+
+            const itemSelectedText = autocompleteList.reduce((acc, liEl) => {
+                const hasSelectedItem = Array.from(liEl.classList).includes('selected');
+
+                if (hasSelectedItem) {
+                    acc = liEl.textContent
+                };
+
+                return acc;
+            }, ''); 
+            const isMultipleInput = autocomplete.hasAttribute('multiple');
+            const hasSelectedItem = autocompleteList.some(liEl => Array.from(liEl.classList).includes('selected'));
+
+            if (hasSelectedItem) {
+                if (isMultipleInput) {
+                    const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+                    const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
+                    const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
+                    const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
+                    const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
+
+                    autocomplete.value = '';
+
+                    if (!isItemAlreadySelected) {
+                        selectedList.push(itemSelectedText.trim());
+                        autocompleteSelectedValues.value = JSON.stringify(selectedList);
+
+                        autocompleteSelected.classList.add('-m-autocom-selected-show');
+                        autocompleteSelectedCounter.dataset.total = totalSelected;
+                        autocompleteSelectedCounter.textContent = totalSelected;
+
+                        removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
+                        mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+                    }
+
+                    removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+
+                    return;
+                }
+
+                autocomplete.value = itemSelectedText;
+                autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);
+                removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);    
+
+                return;
+            }
+
+            return;
+        }
 
         // VERIFICA SE AS SETAS DO TECLADO BAIXO E CIMA FORAM PRESSIONADAS
         if (isArrowUpDownPressed && autocompleteVal && hasMoreThanThreeLetters) {
@@ -420,7 +458,7 @@ const MegaAutoComplete = (() => {
                 removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
                 mountAutoCompleteList.call(this, autocompleteList, filteredList);
                 showAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
-            }, 1150);
+            }, 1000);
 
             return;
         }
@@ -433,10 +471,10 @@ const MegaAutoComplete = (() => {
 
         autocomplete.classList.remove('-m-autocom-show');
         autocompleteList.innerHTML = '';
-        autocompleteList.classList.remove('-m-autocom-list-show');
+        autocompleteList.classList.remove('-list-show');
     }
 
-    function removeAutoCompleteSelectedList(autocompleteWrapper, autocomplete) {
+    function removeAutoCompleteSelectedList(autocompleteWrapper) {
         const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
 
         autocompleteSelectedList.innerHTML = '';
@@ -446,26 +484,26 @@ const MegaAutoComplete = (() => {
         const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
 
         autocomplete.classList.remove('-m-autocom-show');
-        autocompleteList.classList.remove('-m-autocom-list-show');
+        autocompleteList.classList.remove('-list-show');
     }
 
     function hideAutoCompleteSelectedList(autocompleteWrapper) {
         const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
 
-        autocompleteSelectedList.classList.remove('-m-autocom-selected-list-show');
+        autocompleteSelectedList.classList.remove('-selected-list-show');
     }
 
     function showAutoCompleteList(autocompleteWrapper, autocomplete) {
         const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
 
         autocomplete.classList.add('-m-autocom-show');
-        autocompleteList.classList.add('-m-autocom-list-show');
+        autocompleteList.classList.add('-list-show');
     }
 
     function showAutoCompleteSelectedList(autocompleteWrapper) {
         const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
 
-        autocompleteSelectedList.classList.add('-m-autocom-selected-list-show');
+        autocompleteSelectedList.classList.add('-selected-list-show');
     }
 
     function mountAutoCompleteList(autocompleteList, filteredList) {
@@ -559,8 +597,6 @@ const MegaAutoComplete = (() => {
 
         return;
     }
-
-    // return megaAutoComplete;
 
     document.addEventListener('DOMContentLoaded', () => megaAutoComplete.enable());
 })();
