@@ -19,11 +19,11 @@ const MegaAutoComplete = (() => {
         const hasData = Boolean(options.data);
         const hasFilter = Boolean(options.matchFilter);
 
-        const isAutoComplete = Array.from(this.classList).includes('m-autocom');
         const isInputTag = this.tagName === 'INPUT';
+        const isAutoComplete = Array.from(this.classList).includes('m-autocom');
+        const isMegaAutoComplete = isAutoComplete && isInputTag;
 
-        
-        if (hasUrl && isAutoComplete && isInputTag) {
+        if (isMegaAutoComplete && hasUrl) {
             megaAutoComplete.options.url = options.url;
             megaAutoComplete.options.method = hasMethod ? options.method : 'GET';
             megaAutoComplete.options.data = hasData ? options.data : '';
@@ -38,7 +38,7 @@ const MegaAutoComplete = (() => {
 
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocomWrapper => {
-            const autocomplete = autocomWrapper.querySelector('.m-autocom');
+            // const autocomplete = autocomWrapper.querySelector('.m-autocom');
             // const hasAutoCompleteNameAttr = autocomplete.hasAttribute('name');
             // const hasAutoCompleteIdAttr = autocomplete.hasAttribute('id');
 
@@ -81,16 +81,23 @@ const MegaAutoComplete = (() => {
 
     function handleAutoCompleteWrapperClickEvent(event) {
         const element = event.target;
+        const elementClassList = Array.from(element.classList);
         const autocompleteWrapper = element.closest('.m-autocom-wrapper');
-        const autocomplete = autocompleteWrapper.querySelector('.m-autocom');
-        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+        const {
+                autocomplete,
+                autocompleteList,
+                autocompleteSelected,
+                autocompleteSelectedList,
+                autocompleteSelectedCounter,
+                autocompleteSelectedValues
+            } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
-        const isAutoCompleteEl = Array.from(element.classList).includes('m-autocom');
+        const isAutoCompleteEl = elementClassList.includes('m-autocom');
         const isAutoCompleteListEl = Boolean(element.closest('.m-autocom-list'));
-        const AutoCompleteSelectedEl = Array.from(element.classList).includes('m-autocom-selected') || 
-                                       Array.from(element.classList).includes('m-autocom-selected--counter');
-        const isAutoCompleteRemoveItemEl = Array.from(element.classList).includes('m-autocom-remove-item');
-        const isButtonClearListEl = Array.from(element.classList).includes('btn-link');
+        const isAutoCompleteSelectedEl = elementClassList.includes('m-autocom-selected')
+                                         || elementClassList.includes('m-autocom-selected--counter');
+        const isAutoCompleteRemoveItemEl = elementClassList.includes('m-autocom-remove-item');
+        const isButtonClearListEl = elementClassList.includes('btn-link');
 
         const isInputEl = element.tagName === 'INPUT';
         const isLiInputEl = element.tagName === 'LI';
@@ -99,18 +106,16 @@ const MegaAutoComplete = (() => {
 
         const isClickedAutoCompleteEl =  isInputEl && isAutoCompleteEl;
         const isClickedLiAutoCompleteListEl = isLiInputEl && isAutoCompleteListEl;
-        const isClickedDivAutoCompleteSelectedEl = isDivInputEl && AutoCompleteSelectedEl;
+        const isClickedDivAutoCompleteSelectedEl = isDivInputEl && isAutoCompleteSelectedEl;
         const isClickedDivAutoCompleteRemoveItemEl = isDivInputEl && isAutoCompleteRemoveItemEl;
         const isClickedButtonClearListEl = isButtonEl && isButtonClearListEl;
 
         if (isClickedAutoCompleteEl) {
-            const autocomplete = element;
+            const hasAutoCompleteList = Boolean(autocompleteList.querySelector('ul'));
+            const isShowingAutoCompleteList = Array.from(autocomplete.classList).includes('-m-autocom-show')
+                                  || Array.from(autocompleteList.classList).includes('-list-show');
 
-            const hasList = autocompleteList.querySelector('ul');
-            const isShowingList = Array.from(autocomplete.classList).includes('-m-autocom-show') ||
-                                  Array.from(autocompleteList.classList).includes('-list-show');
-
-            if (hasList && !isShowingList) {
+            if (hasAutoCompleteList && !isShowingAutoCompleteList) {
                 autocomplete.classList.add('-m-autocom-show');
                 autocompleteList.classList.add('-list-show');
             }
@@ -123,73 +128,36 @@ const MegaAutoComplete = (() => {
         if (isClickedLiAutoCompleteListEl) {
             const itemSelected = element;
             const itemSelectedText = itemSelected.textContent;
-
-            const autocomplete = autocompleteWrapper.querySelector('.m-autocom');
-            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
-            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
-            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
-
             const isMultipleInput = autocomplete.hasAttribute('multiple');
 
             if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
 
             // INPUT MÚLTIPLO
             if (isMultipleInput) {
-                const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
-                const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
-                const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
-                const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
-                const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
-
-                autocomplete.value = '';
-
-                if (!isItemAlreadySelected) {
-                    selectedList.push(itemSelectedText.trim());
-                    autocompleteSelectedValues.value = JSON.stringify(selectedList);
-
-                    autocompleteSelected.classList.add('-m-autocom-selected-show');
-                    autocompleteSelectedCounter.dataset.total = totalSelected;
-                    autocompleteSelectedCounter.textContent = totalSelected;
-
-                    removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
-                    mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
-                }
-
-                removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
-
-                return;
+                return handleMultipleInput.call(this, autocompleteWrapper, itemSelectedText);
             }
 
             //INPUT SIMPLES
-            autocomplete.value = itemSelectedText;
-            autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);
-            removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);          
-
-            return;
+            return handleSingleInput.call(this, autocompleteWrapper, itemSelectedText);
         }
 
         if (isClickedDivAutoCompleteSelectedEl) {
-            hideAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+            hideAutoCompleteList.call(this, autocompleteWrapper);
             showAutoCompleteSelectedList.call(this, autocompleteWrapper);
         }
 
         if (isClickedDivAutoCompleteRemoveItemEl) {
-            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
-            const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
-            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
-            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
+            let selectedList = JSON.parse(autocompleteSelectedValues.value);
 
             const itemSelectedText = element.previousElementSibling.textContent;
             const totalSelected = Number(autocompleteSelectedCounter.dataset.total) - 1;
             const isEmptyTotalSelected = totalSelected === 0;
 
-            let selectedList = JSON.parse(autocompleteSelectedValues.value);
-
             selectedList = selectedList.filter(selecteItem => selecteItem !== itemSelectedText);
 
-            autocompleteSelectedValues.value = (isEmptyTotalSelected) ? '' : JSON.stringify(selectedList);
-            autocompleteSelectedCounter.dataset.total = totalSelected;
             autocompleteSelectedCounter.textContent = (isEmptyTotalSelected) ? '' : totalSelected;
+            autocompleteSelectedCounter.dataset.total = totalSelected;
+            autocompleteSelectedValues.value = (isEmptyTotalSelected) ? '' : JSON.stringify(selectedList);
 
             removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
             
@@ -205,10 +173,6 @@ const MegaAutoComplete = (() => {
         }
 
         if (isClickedButtonClearListEl) {
-            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
-            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
-            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
-
             autocompleteSelectedCounter.dataset.total = 0;
             autocompleteSelectedCounter.innerText = '';
             autocompleteSelectedValues.value = '';
@@ -216,7 +180,6 @@ const MegaAutoComplete = (() => {
             autocompleteSelected.classList.remove('-m-autocom-selected-show');
             removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
             hideAutoCompleteSelectedList.call(this, autocompleteWrapper);
-
         }
     }
 
@@ -226,36 +189,37 @@ const MegaAutoComplete = (() => {
         const hasAutoCompleteWrapperParent = Boolean(autocompleteWrapper);
         const isAutoCompleteRemoveItemEl = Array.from(element.classList).includes('m-autocom-remove-item');
 
-        const hideOtherAutoCompleteWrapper = autocomWrapper => {
-            const autocomplete = autocomWrapper.querySelector('.m-autocom');
-            const isDifferentAutoCompleteWrapper = autocompleteWrapper !== autocomWrapper;
+        // FECHAR OUTROS AUTOCOMPLETE EXCETO O AUTO COMPLETE QUE FOI CLICADO
+        const hideOtherAutoCompleteWrapper = internalAutoCompleteWrapper => {
+            const isDifferentAutoCompleteWrapper = autocompleteWrapper !== internalAutoCompleteWrapper;
 
             if (isDifferentAutoCompleteWrapper) { // SE FOR DIFERENTE, ENTÃO FECHA OS OUTROS AUTOCOMPLETE WRAPPER
-                hideAutoCompleteList.call(this, autocomWrapper, autocomplete);
-                hideAutoCompleteSelectedList.call(this, autocomWrapper);
+                hideAutoCompleteList.call(this, internalAutoCompleteWrapper);
+                hideAutoCompleteSelectedList.call(this, internalAutoCompleteWrapper);
             }
         };
-        const hideAllAutoCompleteWrapper = autocomWrapper => {
-            const autocomplete = autocomWrapper.querySelector('.m-autocom');
 
-            hideAutoCompleteList.call(this, autocomWrapper, autocomplete);
-            hideAutoCompleteSelectedList.call(this, autocomWrapper);
+        // FECHAR TODOS OS AUTOCOMPLETE
+        const hideAllAutoCompleteWrapper = internalAutoCompleteWrapper => {
+            hideAutoCompleteList.call(this, internalAutoCompleteWrapper);
+            hideAutoCompleteSelectedList.call(this, internalAutoCompleteWrapper);
         };
 
         if (isAutoCompleteRemoveItemEl) return;
 
-        if (hasAutoCompleteWrapperParent) {
-            this.autocompleteWrapper.forEach(hideOtherAutoCompleteWrapper);
-
-            return;
-        }
+        if (hasAutoCompleteWrapperParent) return this.autocompleteWrapper.forEach(hideOtherAutoCompleteWrapper);
 
         this.autocompleteWrapper.forEach(hideAllAutoCompleteWrapper);
     }
 
     async function handleAutoCompleteKeyUpEvent(event) {
         const autocompleteWrapper = event.target.closest('.m-autocom-wrapper');
-        const autocomplete = event.target;
+        const {
+            autocomplete,
+            autocompleteList,
+            autocompleteListItems,
+        } = getAutoCompleteVariables.call(this, autocompleteWrapper);
+
         const autocompleteVal = autocomplete.value;
         const autocompleteValLenght = autocomplete.value.length;
         const hasUrl = Boolean(this.options.url);
@@ -269,55 +233,21 @@ const MegaAutoComplete = (() => {
 
         // VERIFICA SE O ENTER DO TECLADO FOI PRESSIONADO
         if(isEnterPressed && autocompleteVal && hasMoreThanThreeLetters) {
-            const autocompleteList = Array.from(autocompleteWrapper.querySelectorAll('.m-autocom-list li'));
-            const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
-            const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
-            const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
-
-            const itemSelectedText = autocompleteList.reduce((acc, liEl) => {
-                const hasSelectedItem = Array.from(liEl.classList).includes('selected');
-
-                if (hasSelectedItem) {
-                    acc = liEl.textContent
-                };
-
-                return acc;
-            }, ''); 
+            const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
+            const itemSelectedText = itemSelected.textContent;
             const isMultipleInput = autocomplete.hasAttribute('multiple');
-            const hasSelectedItem = autocompleteList.some(liEl => Array.from(liEl.classList).includes('selected'));
 
-            if (hasSelectedItem) {
+            if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
+
+            // TEM ALGUM ITEM SELECIONADO
+            if (itemSelected) {
+                // INPUT MÚLTIPLO
                 if (isMultipleInput) {
-                    const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
-                    const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
-                    const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
-                    const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
-                    const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
-
-                    autocomplete.value = '';
-
-                    if (!isItemAlreadySelected) {
-                        selectedList.push(itemSelectedText.trim());
-                        autocompleteSelectedValues.value = JSON.stringify(selectedList);
-
-                        autocompleteSelected.classList.add('-m-autocom-selected-show');
-                        autocompleteSelectedCounter.dataset.total = totalSelected;
-                        autocompleteSelectedCounter.textContent = totalSelected;
-
-                        removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
-                        mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
-                    }
-
-                    removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
-
-                    return;
+                    return handleMultipleInput.call(this, autocompleteWrapper, itemSelectedText);
                 }
 
-                autocomplete.value = itemSelectedText;
-                autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);
-                removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);    
-
-                return;
+                // INPUT SIMPLES
+                handleSingleInput.call(this, autocompleteWrapper, itemSelectedText);
             }
 
             return;
@@ -325,13 +255,12 @@ const MegaAutoComplete = (() => {
 
         // VERIFICA SE AS SETAS DO TECLADO BAIXO E CIMA FORAM PRESSIONADAS
         if (isArrowUpDownPressed && autocompleteVal && hasMoreThanThreeLetters) {
-            const autocompleteList = Array.from(autocompleteWrapper.querySelectorAll('.m-autocom-list li'));
-            const hasSelectedItem = autocompleteList.some(liEl => Array.from(liEl.classList).includes('selected'));
+            const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
 
             if (hasSelectedItem) {
-                const selectedIndex = autocompleteList.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+                const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
 
-                autocompleteList.forEach((liEl, index, list) => {
+                autocompleteListItems.forEach((liEl, index, list) => {
                     const ulEl = liEl.parentElement;
                     const scrollPos = liEl.offsetTop;
                     const isFirstIndex = selectedIndex === 0;
@@ -368,9 +297,9 @@ const MegaAutoComplete = (() => {
                 return;
             }
 
-            const ulEl = autocompleteList[0].parentElement;
-            const firstLiEl = autocompleteList[0];
-            const lastLiEl = autocompleteList[autocompleteList.length - 1];
+            const ulEl = autocompleteListItems[0].parentElement;
+            const firstLiEl = autocompleteListItems[0];
+            const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
 
             // SE NÃO TIVER ITEM SELECIONADO E A SETA PRA BAIXO FOR CLICADA, ENTÃO SELECIONA O PRIMEIRO
             if (isArrowDownPressed) {
@@ -391,15 +320,12 @@ const MegaAutoComplete = (() => {
 
             this.timeoutId = setTimeout(async () => {
                 let filteredList;
-                const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
 
                 const method = this.options.method;
                 const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
                 // const responseData = await fetchData.call(this, url, this.options.data);
                 // const hasRequestError = responseData.status === 'error';
-                const generateList = item => {
-                    return item;
-                };
+                const generateList = item => item;
                 const generateFiltredList = (acc, item) => {
                     const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
                     const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
@@ -412,7 +338,6 @@ const MegaAutoComplete = (() => {
     
                     return acc;
                 };
-
 
                 // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
 
@@ -455,19 +380,19 @@ const MegaAutoComplete = (() => {
                                     ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
                                     : this.suggestions.map(generateList);
 
-                removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+                removeAutoCompleteList.call(this, autocompleteWrapper);
                 mountAutoCompleteList.call(this, autocompleteList, filteredList);
-                showAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+                showAutoCompleteList.call(this, autocompleteWrapper);
             }, 1000);
 
             return;
         }
 
-        if (!autocompleteVal || !hasMoreThanThreeLetters) removeAutoCompleteList.call(this, autocompleteWrapper, autocomplete);
+        if (!autocompleteVal || !hasMoreThanThreeLetters) removeAutoCompleteList.call(this, autocompleteWrapper);
     }
 
-    function removeAutoCompleteList(autocompleteWrapper, autocomplete) {
-        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+    function removeAutoCompleteList(autocompleteWrapper) {
+        const { autocomplete, autocompleteList } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
         autocomplete.classList.remove('-m-autocom-show');
         autocompleteList.innerHTML = '';
@@ -475,33 +400,33 @@ const MegaAutoComplete = (() => {
     }
 
     function removeAutoCompleteSelectedList(autocompleteWrapper) {
-        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+        const { autocompleteSelectedList } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
         autocompleteSelectedList.innerHTML = '';
     }
 
-    function hideAutoCompleteList(autocompleteWrapper, autocomplete) {
-        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+    function hideAutoCompleteList(autocompleteWrapper) {
+        const { autocomplete, autocompleteList } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
         autocomplete.classList.remove('-m-autocom-show');
         autocompleteList.classList.remove('-list-show');
     }
 
     function hideAutoCompleteSelectedList(autocompleteWrapper) {
-        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+        const { autocompleteSelectedList } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
         autocompleteSelectedList.classList.remove('-selected-list-show');
     }
 
-    function showAutoCompleteList(autocompleteWrapper, autocomplete) {
-        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+    function showAutoCompleteList(autocompleteWrapper) {
+        const { autocomplete, autocompleteList } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
         autocomplete.classList.add('-m-autocom-show');
         autocompleteList.classList.add('-list-show');
     }
 
     function showAutoCompleteSelectedList(autocompleteWrapper) {
-        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+        const { autocompleteSelectedList } = getAutoCompleteVariables.call(this, autocompleteWrapper);
 
         autocompleteSelectedList.classList.add('-selected-list-show');
     }
@@ -555,6 +480,45 @@ const MegaAutoComplete = (() => {
         }
     }
 
+    function handleMultipleInput(autocompleteWrapper, itemSelectedText) {
+        const {
+            autocomplete,
+            autocompleteSelected,
+            autocompleteSelectedList,
+            autocompleteSelectedCounter,
+            autocompleteSelectedValues
+        } = getAutoCompleteVariables.call(this, autocompleteWrapper);
+
+        const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
+        const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
+        const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
+        const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
+
+        autocomplete.value = '';
+
+        if (!isItemAlreadySelected) {
+            selectedList.push(itemSelectedText.trim());
+            autocompleteSelectedValues.value = JSON.stringify(selectedList);
+
+            autocompleteSelected.classList.add('-m-autocom-selected-show');
+            autocompleteSelectedCounter.dataset.total = totalSelected;
+            autocompleteSelectedCounter.textContent = totalSelected;
+
+            removeAutoCompleteSelectedList.call(this, autocompleteWrapper);
+            mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+        }
+
+        removeAutoCompleteList.call(this, autocompleteWrapper);
+    }
+
+    function handleSingleInput(autocompleteWrapper, itemSelectedText) {
+        const { autocomplete, autocompleteSelectedValues } = getAutoCompleteVariables.call(this, autocompleteWrapper);
+
+        autocomplete.value = itemSelectedText;
+        autocompleteSelectedValues.value = JSON.stringify([itemSelectedText.trim()]);
+        removeAutoCompleteList.call(this, autocompleteWrapper);
+    }
+
     async function fetchData(url, data) {
         try {
             const headers = {'Accept': 'application/json','Content-Type': 'application/json'};
@@ -596,6 +560,26 @@ const MegaAutoComplete = (() => {
         }
 
         return;
+    }
+
+    const getAutoCompleteVariables = (autocompleteWrapper) => {
+        const autocomplete = autocompleteWrapper.querySelector('.m-autocom');
+        const autocompleteList = autocompleteWrapper.querySelector('.m-autocom-list');
+        const autocompleteListItems = Array.from(autocompleteWrapper.querySelectorAll('.m-autocom-list li'));
+        const autocompleteSelected = autocompleteWrapper.querySelector('.m-autocom-selected');
+        const autocompleteSelectedList = autocompleteWrapper.querySelector('.m-autocom-selected-list');
+        const autocompleteSelectedCounter = autocompleteWrapper.querySelector('.m-autocom-selected--counter');
+        const autocompleteSelectedValues = autocompleteWrapper.querySelector('.m-autocom-selected--values');
+
+        return {
+            autocomplete,
+            autocompleteList,
+            autocompleteListItems,
+            autocompleteSelected,
+            autocompleteSelectedList,
+            autocompleteSelectedCounter,
+            autocompleteSelectedValues
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => megaAutoComplete.enable());
