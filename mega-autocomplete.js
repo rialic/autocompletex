@@ -223,28 +223,41 @@ const MegaAutoComplete = (() => {
         const hasUrl = Boolean(this.options.url);
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
 
-        const keyPressed = event.keyCode;
-        const isEnterPressed = keyPressed === 13;
-        const isArrowUpPressed = keyPressed === 38;
-        const isArrowDownPressed = keyPressed === 40;
+        const keyCode = event.keyCode;
+        const keyVal = event.key;
+        const isEnterPressed = keyCode === 13;
+        const isArrowUpPressed = keyCode === 38;
+        const isArrowDownPressed = keyCode === 40;
         const isArrowUpDownPressed = isArrowUpPressed || isArrowDownPressed;
 
-        // VERIFICA SE O ENTER DO TECLADO FOI PRESSIONADO
-        if(isEnterPressed && autocompleteVal && hasMoreThanThreeLetters) {
-            const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
-            const itemSelectedText = itemSelected.textContent;
-            const isMultipleInput = autocomplete.hasAttribute('multiple');
-            const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
-            const inputSingleMultiple = InputSingleMultiple.call(this);
 
-            if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
+        if (autocompleteVal && hasMoreThanThreeLetters) {
+            const fireEvent = {
+                'Enter': fireEnterEvent,
+                'ArrowUp' : fireArrowUpEvent,
+                'ArrowDown' : fireArrowDownEvent
+            }
 
-            //INPUT SIMPLES OU MÚLTIPLO
-            inputSingleMultiple.setStrategy.call(this, typeInput);
-            inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
+            fireEvent[keyVal].call(this, autocompleteListItems, autocomplete);
 
-            return;
         }
+
+        // VERIFICA SE O ENTER DO TECLADO FOI PRESSIONADO
+        // if(isEnterPressed && autocompleteVal && hasMoreThanThreeLetters) {
+            // const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
+            // const itemSelectedText = itemSelected.textContent;
+            // const isMultipleInput = autocomplete.hasAttribute('multiple');
+            // const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
+            // const inputSingleMultiple = InputSingleMultiple.call(this);
+
+            // if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
+
+            // //INPUT SIMPLES OU MÚLTIPLO
+            // inputSingleMultiple.setStrategy.call(this, typeInput);
+            // inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
+
+            // return;
+        // }
 
         // VERIFICA SE AS SETAS DO TECLADO BAIXO E CIMA FORAM PRESSIONADAS
         if (isArrowUpDownPressed && autocompleteVal && hasMoreThanThreeLetters) {
@@ -309,78 +322,78 @@ const MegaAutoComplete = (() => {
             return;
         }
 
-        if (autocompleteVal && hasMoreThanThreeLetters && hasUrl) {
-            clearTimeout(this.timeoutId);
+        // if (autocompleteVal && hasMoreThanThreeLetters && hasUrl) {
+        //     clearTimeout(this.timeoutId);
 
-            this.timeoutId = setTimeout(async () => {
-                let filteredList;
+        //     this.timeoutId = setTimeout(async () => {
+        //         let filteredList;
 
-                const method = this.options.method;
-                const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
-                // const responseData = await fetchData.call(this, url, this.options.data);
-                // const hasRequestError = responseData.status === 'error';
-                const generateList = item => item;
-                const generateFiltredList = (acc, item) => {
-                    const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
-                    const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
+        //         const method = this.options.method;
+        //         const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
+        //         // const responseData = await fetchData.call(this, url, this.options.data);
+        //         // const hasRequestError = responseData.status === 'error';
+        //         const generateList = item => item;
+        //         const generateFiltredList = (acc, item) => {
+        //             const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
+        //             const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
     
-                    if (isItemMatching) {
-                        if (hasDefaultResultList) acc.pop();
+        //             if (isItemMatching) {
+        //                 if (hasDefaultResultList) acc.pop();
     
-                        acc.push(item);
-                    }
+        //                 acc.push(item);
+        //             }
     
-                    return acc;
-                }
+        //             return acc;
+        //         }
 
-                // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
+        //         // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
 
-                this.suggestions = [
-                        "Channel",
-                        "CodingLab",
-                        "CodingNepal",
-                        "YouTube",
-                        "YouTuber",
-                        "YouTube Channel",
-                        "Blogger",
-                        "Bollywood",
-                        "Vlogger",
-                        "Vechiles",
-                        "Facebook",
-                        "Freelancer",
-                        "Facebook Page",
-                        "Designer",
-                        "Developer",
-                        "Web Designer",
-                        "Web Developer",
-                        "Login Form in HTML & CSS",
-                        "How to learn HTML & CSS",
-                        "How to learn JavaScript",
-                        "How to became Freelancer",
-                        "How to became Web Designer",
-                        "How to start Gaming Channel",
-                        "How to start YouTube Channel",
-                        "How to start Programing",
-                        "How to become smart person",
-                        "How to think fast",
-                        "How can I become a day trader",
-                        "How to lose weight",
-                        "What does HTML stands for?",
-                        "What does CSS stands for?",
-                        "Vira Lata - (SRD) Sem Raça Definida no geral",
-                    ]
+        //         this.suggestions = [
+        //                 "Channel",
+        //                 "CodingLab",
+        //                 "CodingNepal",
+        //                 "YouTube",
+        //                 "YouTuber",
+        //                 "YouTube Channel",
+        //                 "Blogger",
+        //                 "Bollywood",
+        //                 "Vlogger",
+        //                 "Vechiles",
+        //                 "Facebook",
+        //                 "Freelancer",
+        //                 "Facebook Page",
+        //                 "Designer",
+        //                 "Developer",
+        //                 "Web Designer",
+        //                 "Web Developer",
+        //                 "Login Form in HTML & CSS",
+        //                 "How to learn HTML & CSS",
+        //                 "How to learn JavaScript",
+        //                 "How to became Freelancer",
+        //                 "How to became Web Designer",
+        //                 "How to start Gaming Channel",
+        //                 "How to start YouTube Channel",
+        //                 "How to start Programing",
+        //                 "How to become smart person",
+        //                 "How to think fast",
+        //                 "How can I become a day trader",
+        //                 "How to lose weight",
+        //                 "What does HTML stands for?",
+        //                 "What does CSS stands for?",
+        //                 "Vira Lata - (SRD) Sem Raça Definida no geral",
+        //             ]
 
-                filteredList = (this.options.matchFilter) 
-                                    ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
-                                    : this.suggestions.map(generateList);
+        //         filteredList = (this.options.matchFilter) 
+        //                             ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
+        //                             : this.suggestions.map(generateList);
 
-                removeAutoCompleteList.call(this, autocompleteContainer);
-                mountAutoCompleteList.call(this, autocompleteList, filteredList);
-                showAutoCompleteList.call(this, autocompleteContainer);
-            }, 1000);
+        //         removeAutoCompleteList.call(this, autocompleteContainer);
+        //         mountAutoCompleteList.call(this, autocompleteList, filteredList);
+        //         showAutoCompleteList.call(this, autocompleteContainer);
+        //     }, 1000);
 
-            return;
-        }
+        //     return;
+        // }
 
         if (!autocompleteVal || !hasMoreThanThreeLetters) removeAutoCompleteList.call(this, autocompleteContainer);
     }
@@ -475,12 +488,127 @@ const MegaAutoComplete = (() => {
         }
     }
 
-    function InputSingleMultiple() {
-        let handle = null;
+    async function fetchData(url, data) {
+        try {
+            const headers = {'Accept': 'application/json','Content-Type': 'application/json'};
+            const method = this.options.method;
+            const body = JSON.stringify(data);
 
-        const setStrategy = typeInput => handle = typeInput;
+            const response = (method === 'GET') ? await fetch(url, {headers, method}) : await fetch(url, {headers, method, body});
+
+            const hasGetVal = Boolean(this.options.getVal);
+            const isStringGetVal = typeof this.options.getVal === 'string';
+            const isFunctionGetVal = typeof this.options.getVal === 'function';
+
+            if (!response.ok) throw new Error('Não foi possível obter os dados da requisição');
+
+            if (hasGetVal) {
+                if (isStringGetVal) return (await response.json())[this.options.getVal];
+
+                if (isFunctionGetVal) return this.options.getVal((await response.json()));
+            }
+
+            return (await response.json());
+        } catch (error) {
+            return {'status': 'error', 'message': `${error.message}`};
+        }
+    }
+
+    function fireEnterEvent(autocompleteListItems, autocomplete) {
+        const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
+        const itemSelectedText = itemSelected.textContent;
+        const isMultipleInput = autocomplete.hasAttribute('multiple');
+        const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
+        const inputSingleMultiple = InputSingleMultiple.call(this);
+
+        if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
+
+        //INPUT SIMPLES OU MÚLTIPLO
+        inputSingleMultiple.setStrategy.call(this, typeInput);
+        inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
+
+        return;
+    }
+
+
+    function fireArrowUpEvent(autocompleteListItems, _) {
+        const ulEl = autocompleteListItems[0].parentElement;
+        const firstLiEl = autocompleteListItems[0];
+        const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
+
+        const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
+        const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+
+        if (hasSelectedItem) {
+            const navigateList = (liEl, index) => {
+                const ulEl = liEl.parentElement;
+                const scrollPos = liEl.offsetTop;
+                const isEqualIndex = (selectedIndex - 1) === index;
+                const isFirstIndex = selectedIndex === 0;
+
+                if (isFirstIndex) return;
+
+                if (isEqualIndex) {
+                    liEl.nextElementSibling.classList.remove('selected');
+                    liEl.classList.add('selected');
+
+                    ulEl.scrollTop = scrollPos;
+                }
+            }
+
+            autocompleteListItems.forEach(navigateList);
+
+            return;
+        }
+
+        ulEl.scrollTop = lastLiEl.offsetTop;
+        lastLiEl.classList.add('selected');
+
+        return;
+    }
+
+
+    function fireArrowDownEvent(autocompleteListItems, _) {
+        const ulEl = autocompleteListItems[0].parentElement;
+        const firstLiEl = autocompleteListItems[0];
+        const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
+
+        const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
+        const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+
+        if (hasSelectedItem) {
+            const navigateList = (liEl, index, list) => {
+                const ulEl = liEl.parentElement;
+                const scrollPos = liEl.offsetTop;
+                const isEqualIndex = (selectedIndex + 1) === index;
+                const isLastIndex = selectedIndex === list.length;
+
+                if (isLastIndex) return;
+
+                if (isEqualIndex) {
+                    liEl.previousElementSibling.classList.remove('selected');
+                    liEl.classList.add('selected');
+
+                    ulEl.scrollTop = scrollPos;
+                }
+            }
+
+            autocompleteListItems.forEach(navigateList);
+
+            return;
+        }
+
+        firstLiEl.classList.add('selected');
+
+        return;
+    }
+
+    function InputSingleMultiple() {
+        this.inputType = null;
+
+        const setStrategy = inputType => this.inputType = inputType;
         const define = (autocompleteContainer, itemSelectedText) => {
-            handle.define.call(this, autocompleteContainer, itemSelectedText);
+            this.inputType.define.call(this, autocompleteContainer, itemSelectedText);
         }
 
         return {setStrategy, define};
@@ -531,32 +659,6 @@ const MegaAutoComplete = (() => {
         }
 
         return {define};
-    }
-
-    async function fetchData(url, data) {
-        try {
-            const headers = {'Accept': 'application/json','Content-Type': 'application/json'};
-            const method = this.options.method;
-            const body = JSON.stringify(data);
-
-            const response = (method === 'GET') ? await fetch(url, {headers, method}) : await fetch(url, {headers, method, body});
-
-            const hasGetVal = Boolean(this.options.getVal);
-            const isStringGetVal = typeof this.options.getVal === 'string';
-            const isFunctionGetVal = typeof this.options.getVal === 'function';
-
-            if (!response.ok) throw new Error('Não foi possível obter os dados da requisição');
-
-            if (hasGetVal) {
-                if (isStringGetVal) return (await response.json())[this.options.getVal];
-
-                if (isFunctionGetVal) return this.options.getVal((await response.json()));
-            }
-
-            return (await response.json());
-        } catch (error) {
-            return {'status': 'error', 'message': `${error.message}`};
-        }
     }
 
     const makeElement = (elementName, attributes = {}) => {
