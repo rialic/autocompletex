@@ -29,24 +29,22 @@ const MegaAutoComplete = (() => {
             megaAutoComplete.options.data = hasData ? options.data : '';
             megaAutoComplete.options.matchFilter = hasFilter;
             megaAutoComplete.options.getVal = options.getVal;
-
-            return;
         }
-
-        return; 
     }
 
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocompleteContainer => {
-            // const autocomplete = autocompleteContainer.querySelector('.m-autocom');
             // const hasAutoCompleteNameAttr = autocomplete.hasAttribute('name');
             // const hasAutoCompleteIdAttr = autocomplete.hasAttribute('id');
 
+            const autocomplete = autocompleteContainer.querySelector('.mega-ac');
+            const autocompleteFormFloating = autocomplete.closest('.form-floating');
             const autocompleteList = makeElement.call(this, 'div', { 'class': 'mega-ac-list' });
             const autocompleteSelected = makeElement.call(this, 'div', { 'class': 'mega-ac-selected' });
             const autocompleteSelectedCounter = makeElement.call(this, 'div', { 'class': 'mega-ac-selected__counter', 'data-total': 0 });
             const autocompleteSelectedValues = makeElement.call(this, 'input', { 'class': 'mega-ac-selected__values' });
             const autocompleteSelectedList = makeElement.call(this, 'div', { 'class': 'mega-ac-selected-list' });
+
 
             // if (hasAutoCompleteIdAttr) {
             //     const autocompleteIdAttr = autocomplete.getAttribute('id');
@@ -60,6 +58,37 @@ const MegaAutoComplete = (() => {
             //     autocomplete.removeAttribute('name');
             //     autocompleteSelectedValues.setAttribute('name', autocompleteNameAttr);
             // }
+
+            if (autocompleteFormFloating) {
+                const autocompleteColorList = [
+                    'mega-ac--primary',
+                    'mega-ac--secondary',
+                    'mega-ac--success',
+                    'mega-ac--danger',
+                    'mega-ac--warning',
+                    'mega-ac--info',
+                    'mega-ac--dark',
+                    'mega-ac--pink',
+                    'mega-ac--lilac',
+                    'mega-ac--purple',
+                    'mega-ac--blue',
+                    'mega-ac--orange'
+                ];
+
+                const autocompleteBgSelected = autocomplete.dataset.bgSelected;
+                const findAutoCompleteClassColor = classItem => {
+                    const hasClassItem = autocompleteColorList.includes(classItem);
+
+                    if(hasClassItem) return classItem;
+                }
+                const autocompleteClassColor = Array.from(autocomplete.classList).find(findAutoCompleteClassColor);
+
+                autocomplete.classList.remove(autocompleteClassColor);
+                autocomplete.removeAttribute('data-bg-selected');
+
+                autocompleteFormFloating.classList.add(autocompleteClassColor);
+                autocompleteFormFloating.dataset.bgSelected = autocompleteBgSelected;
+            }
 
             autocompleteContainer.insertAdjacentElement('beforeend', autocompleteList);
 
@@ -84,18 +113,18 @@ const MegaAutoComplete = (() => {
         const elementClassList = Array.from(element.classList);
         const autocompleteContainer = element.closest('.mega-ac-container');
         const {
-                autocomplete,
-                autocompleteList,
-                autocompleteSelected,
-                autocompleteSelectedList,
-                autocompleteSelectedCounter,
-                autocompleteSelectedValues
-            } = getAutoCompleteVariables.call(this, autocompleteContainer);
+            autocomplete,
+            autocompleteList,
+            autocompleteSelected,
+            autocompleteSelectedList,
+            autocompleteSelectedCounter,
+            autocompleteSelectedValues
+        } = getAutoCompleteVariables.call(this, autocompleteContainer);
 
         const isAutoCompleteEl = elementClassList.includes('mega-ac');
         const isAutoCompleteListEl = Boolean(element.closest('.mega-ac-list'));
         const isAutoCompleteSelectedEl = elementClassList.includes('mega-ac-selected')
-                                         || elementClassList.includes('mega-ac-selected__counter');
+            || elementClassList.includes('mega-ac-selected__counter');
         const isAutoCompleteRemoveItemEl = elementClassList.includes('mega-ac-selected-list__remove-item');
         const isButtonClearListEl = elementClassList.includes('btn-link');
 
@@ -113,7 +142,7 @@ const MegaAutoComplete = (() => {
         if (isClickedAutoCompleteEl) {
             const hasAutoCompleteList = Boolean(autocompleteList.querySelector('ul'));
             const isShowingAutoCompleteList = Array.from(autocomplete.classList).includes('mega-ac--show')
-                                  || Array.from(autocompleteList.classList).includes('mega-ac-list--show');
+                || Array.from(autocompleteList.classList).includes('mega-ac-list--show');
 
             if (hasAutoCompleteList && !isShowingAutoCompleteList) {
                 autocomplete.classList.add('mega-ac--show');
@@ -158,14 +187,14 @@ const MegaAutoComplete = (() => {
             autocompleteSelectedValues.value = (isEmptyTotalSelected) ? '' : JSON.stringify(selectedList);
 
             removeAutoCompleteSelectedList.call(this, autocompleteContainer);
-            
+
             if (isEmptyTotalSelected) {
                 autocompleteSelected.classList.remove('mega-ac-selected--show');
                 hideAutoCompleteSelectedList.call(this, autocompleteContainer);
-                
+
                 return;
             }
-            
+
             mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
             showAutoCompleteSelectedList.call(this, autocompleteContainer);
         }
@@ -223,177 +252,13 @@ const MegaAutoComplete = (() => {
         const hasUrl = Boolean(this.options.url);
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
 
-        const keyCode = event.keyCode;
         const keyVal = event.key;
-        const isEnterPressed = keyCode === 13;
-        const isArrowUpPressed = keyCode === 38;
-        const isArrowDownPressed = keyCode === 40;
-        const isArrowUpDownPressed = isArrowUpPressed || isArrowDownPressed;
 
+        if (hasUrl && autocompleteVal && hasMoreThanThreeLetters) {
+            const params = {autocompleteContainer, autocompleteList, autocompleteListItems, autocomplete, autocompleteVal};
 
-        if (autocompleteVal && hasMoreThanThreeLetters) {
-            const fireEvent = {
-                'Enter': fireEnterEvent,
-                'ArrowUp' : fireArrowUpEvent,
-                'ArrowDown' : fireArrowDownEvent
-            }
-
-            fireEvent[keyVal].call(this, autocompleteListItems, autocomplete);
-
+            fireEvents.call(this, keyVal, params);
         }
-
-        // VERIFICA SE O ENTER DO TECLADO FOI PRESSIONADO
-        // if(isEnterPressed && autocompleteVal && hasMoreThanThreeLetters) {
-            // const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
-            // const itemSelectedText = itemSelected.textContent;
-            // const isMultipleInput = autocomplete.hasAttribute('multiple');
-            // const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
-            // const inputSingleMultiple = InputSingleMultiple.call(this);
-
-            // if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
-
-            // //INPUT SIMPLES OU MÚLTIPLO
-            // inputSingleMultiple.setStrategy.call(this, typeInput);
-            // inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
-
-            // return;
-        // }
-
-        // VERIFICA SE AS SETAS DO TECLADO BAIXO E CIMA FORAM PRESSIONADAS
-        if (isArrowUpDownPressed && autocompleteVal && hasMoreThanThreeLetters) {
-            const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
-
-            if (hasSelectedItem) {
-                const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
-                const navigateList = (liEl, index, list) => {
-                    const ulEl = liEl.parentElement;
-                    const scrollPos = liEl.offsetTop;
-                    const isFirstIndex = selectedIndex === 0;
-                    const isLastIndex = selectedIndex === list.length;
-
-                    if (isArrowUpPressed) {
-                        const isEqualIndex = (selectedIndex - 1) === index;
-
-                        if (isFirstIndex) return;
-
-                        if (isEqualIndex) {
-                            liEl.nextElementSibling.classList.remove('selected');
-                            liEl.classList.add('selected');
-
-                            ulEl.scrollTop = scrollPos;
-                        }
-                    }
-
-                    if (isArrowDownPressed) {
-                        const isEqualIndex = (selectedIndex + 1) === index;
-
-                        if (isLastIndex) return;
-
-                        if (isEqualIndex) {
-                            liEl.previousElementSibling.classList.remove('selected');
-                            liEl.classList.add('selected');
-
-                            ulEl.scrollTop = scrollPos;
-                        }
-                    }
-
-                }
-
-                autocompleteListItems.forEach(navigateList);
-
-                return;
-            }
-
-            const ulEl = autocompleteListItems[0].parentElement;
-            const firstLiEl = autocompleteListItems[0];
-            const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
-
-            // SE NÃO TIVER ITEM SELECIONADO E A SETA PRA BAIXO FOR CLICADA, ENTÃO SELECIONA O PRIMEIRO
-            if (isArrowDownPressed) {
-                firstLiEl.classList.add('selected');
-            }
-
-            // SE NÃO TIVER ITEM SELECIONADO E A SETA PRA CIMA FOR CLICADA, ENTÃO SELECIONA O ÚLTIMO
-            if (isArrowUpPressed) {
-                ulEl.scrollTop = lastLiEl.offsetTop;
-                lastLiEl.classList.add('selected');
-            }
-
-            return;
-        }
-
-        // if (autocompleteVal && hasMoreThanThreeLetters && hasUrl) {
-        //     clearTimeout(this.timeoutId);
-
-        //     this.timeoutId = setTimeout(async () => {
-        //         let filteredList;
-
-        //         const method = this.options.method;
-        //         const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
-        //         // const responseData = await fetchData.call(this, url, this.options.data);
-        //         // const hasRequestError = responseData.status === 'error';
-        //         const generateList = item => item;
-        //         const generateFiltredList = (acc, item) => {
-        //             const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
-        //             const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
-    
-        //             if (isItemMatching) {
-        //                 if (hasDefaultResultList) acc.pop();
-    
-        //                 acc.push(item);
-        //             }
-    
-        //             return acc;
-        //         }
-
-        //         // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
-
-        //         this.suggestions = [
-        //                 "Channel",
-        //                 "CodingLab",
-        //                 "CodingNepal",
-        //                 "YouTube",
-        //                 "YouTuber",
-        //                 "YouTube Channel",
-        //                 "Blogger",
-        //                 "Bollywood",
-        //                 "Vlogger",
-        //                 "Vechiles",
-        //                 "Facebook",
-        //                 "Freelancer",
-        //                 "Facebook Page",
-        //                 "Designer",
-        //                 "Developer",
-        //                 "Web Designer",
-        //                 "Web Developer",
-        //                 "Login Form in HTML & CSS",
-        //                 "How to learn HTML & CSS",
-        //                 "How to learn JavaScript",
-        //                 "How to became Freelancer",
-        //                 "How to became Web Designer",
-        //                 "How to start Gaming Channel",
-        //                 "How to start YouTube Channel",
-        //                 "How to start Programing",
-        //                 "How to become smart person",
-        //                 "How to think fast",
-        //                 "How can I become a day trader",
-        //                 "How to lose weight",
-        //                 "What does HTML stands for?",
-        //                 "What does CSS stands for?",
-        //                 "Vira Lata - (SRD) Sem Raça Definida no geral",
-        //             ]
-
-        //         filteredList = (this.options.matchFilter) 
-        //                             ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
-        //                             : this.suggestions.map(generateList);
-
-        //         removeAutoCompleteList.call(this, autocompleteContainer);
-        //         mountAutoCompleteList.call(this, autocompleteList, filteredList);
-        //         showAutoCompleteList.call(this, autocompleteContainer);
-        //     }, 1000);
-
-        //     return;
-        // }
 
         if (!autocompleteVal || !hasMoreThanThreeLetters) removeAutoCompleteList.call(this, autocompleteContainer);
     }
@@ -456,14 +321,14 @@ const MegaAutoComplete = (() => {
 
     function mountAutoCompleteSelectedList(autocompleteSelectedList, filteredList) {
         const hasItemsInSelectedList = autocompleteSelectedList.hasChildNodes();
-        const ulEl = (hasItemsInSelectedList) ? autocompleteSelectedList.querySelector('ul') 
-                                                              : makeElement.call(this, 'ul');
+        const ulEl = (hasItemsInSelectedList) ? autocompleteSelectedList.querySelector('ul')
+            : makeElement.call(this, 'ul');
         const generateList = item => {
             const divWrapperEl = makeElement.call(this, 'div', {class: 'd-flex align-items-center justify-content-between'});
             const divRemoveIconEl = makeElement.call(this, 'div', {class: 'mega-ac-selected-list__remove-item'});
             const spanTextEl = makeElement.call(this, 'span');
             const liEl = makeElement.call(this, 'li');
-        
+
             divRemoveIconEl.classList.add('mega-ac-selected-list__remove-item');
             spanTextEl.textContent = item;
 
@@ -514,7 +379,80 @@ const MegaAutoComplete = (() => {
         }
     }
 
-    function fireEnterEvent(autocompleteListItems, autocomplete) {
+    function fireTypingEvent (params) {
+        clearTimeout(this.timeoutId);
+
+        this.timeoutId = setTimeout(async () => {
+            let filteredList;
+
+            const { autocompleteContainer, autocompleteList, autocompleteVal } = params;
+            const method = this.options.method;
+            const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
+            // const responseData = await fetchData.call(this, url, this.options.data);
+            // const hasRequestError = responseData.status === 'error';
+            const generateList = item => item;
+            const generateFiltredList = (acc, item) => {
+                const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
+                const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
+
+                if (isItemMatching) {
+                    if (hasDefaultResultList) acc.pop();
+
+                    acc.push(item);
+                }
+
+                return acc;
+            }
+
+            // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
+
+            this.suggestions = [
+                "Channel",
+                "CodingLab",
+                "CodingNepal",
+                "YouTube",
+                "YouTuber",
+                "YouTube Channel",
+                "Blogger",
+                "Bollywood",
+                "Vlogger",
+                "Vechiles",
+                "Facebook",
+                "Freelancer",
+                "Facebook Page",
+                "Designer",
+                "Developer",
+                "Web Designer",
+                "Web Developer",
+                "Login Form in HTML & CSS",
+                "How to learn HTML & CSS",
+                "How to learn JavaScript",
+                "How to became Freelancer",
+                "How to became Web Designer",
+                "How to start Gaming Channel",
+                "How to start YouTube Channel",
+                "How to start Programing",
+                "How to become smart person",
+                "How to think fast",
+                "How can I become a day trader",
+                "How to lose weight",
+                "What does HTML stands for?",
+                "What does CSS stands for?",
+                "Vira Lata - (SRD) Sem Raça Definida no geral",
+            ]
+
+            filteredList = (this.options.matchFilter)
+                ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
+                : this.suggestions.map(generateList);
+
+            removeAutoCompleteList.call(this, autocompleteContainer);
+            mountAutoCompleteList.call(this, autocompleteList, filteredList);
+            showAutoCompleteList.call(this, autocompleteContainer);
+        }, 1000);
+    }
+
+    function fireEnterEvent(params) {
+        const { autocompleteContainer, autocompleteListItems, autocomplete } = params;
         const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
         const itemSelectedText = itemSelected.textContent;
         const isMultipleInput = autocomplete.hasAttribute('multiple');
@@ -526,14 +464,11 @@ const MegaAutoComplete = (() => {
         //INPUT SIMPLES OU MÚLTIPLO
         inputSingleMultiple.setStrategy.call(this, typeInput);
         inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
-
-        return;
     }
 
-
-    function fireArrowUpEvent(autocompleteListItems, _) {
+    function fireArrowUpEvent(params) {
+        const { autocompleteListItems } = params;
         const ulEl = autocompleteListItems[0].parentElement;
-        const firstLiEl = autocompleteListItems[0];
         const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
 
         const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
@@ -563,15 +498,12 @@ const MegaAutoComplete = (() => {
 
         ulEl.scrollTop = lastLiEl.offsetTop;
         lastLiEl.classList.add('selected');
-
-        return;
     }
 
 
-    function fireArrowDownEvent(autocompleteListItems, _) {
-        const ulEl = autocompleteListItems[0].parentElement;
+    function fireArrowDownEvent(params) {
+        const { autocompleteListItems } = params;
         const firstLiEl = autocompleteListItems[0];
-        const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
 
         const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
         const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
@@ -599,8 +531,17 @@ const MegaAutoComplete = (() => {
         }
 
         firstLiEl.classList.add('selected');
+    }
 
-        return;
+    function fireEvents(type, params) {
+        const typeEvent = {
+            'Enter': fireEnterEvent,
+            'ArrowUp' : fireArrowUpEvent,
+            'ArrowDown' : fireArrowDownEvent,
+            'default' : fireTypingEvent
+        };
+
+        return (typeEvent[type] || typeEvent['default']).call(this, params);
     }
 
     function InputSingleMultiple() {
@@ -635,26 +576,26 @@ const MegaAutoComplete = (() => {
                 autocompleteSelectedCounter,
                 autocompleteSelectedValues
             } = getAutoCompleteVariables.call(this, autocompleteContainer);
-    
+
             const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
             const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
             const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
             const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
-    
+
             autocomplete.value = '';
-    
+
             if (!isItemAlreadySelected) {
                 selectedList.push(itemSelectedText.trim());
                 autocompleteSelectedValues.value = JSON.stringify(selectedList);
-    
+
                 autocompleteSelected.classList.add('mega-ac-selected--show');
                 autocompleteSelectedCounter.dataset.total = totalSelected;
                 autocompleteSelectedCounter.textContent = totalSelected;
-    
+
                 removeAutoCompleteSelectedList.call(this, autocompleteContainer);
                 mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
             }
-    
+
             removeAutoCompleteList.call(this, autocompleteContainer);
         }
 
@@ -674,8 +615,6 @@ const MegaAutoComplete = (() => {
 
             return element;
         }
-
-        return;
     }
 
     const getAutoCompleteVariables = (autocompleteContainer) => {
@@ -700,6 +639,7 @@ const MegaAutoComplete = (() => {
 
     document.addEventListener('DOMContentLoaded', () => megaAutoComplete.enable());
 })();
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const autocomplete = document.querySelector('.mega-ac');
