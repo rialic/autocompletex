@@ -14,30 +14,40 @@
 
 <body>
 
-    <div class="row m-5">
+    <form action="www.google.com.br">
+        
+        <div class="row m-5">
 
-        <div class="col-12">
-
-            <div class="mega-ac-container">
-
-                    <input id="usuario_id" type="text" name="usuario" class="mega-ac mega-ac--purple form-control form-control-sm" multiple data-bg-selected="success"
-                           autocomplete="off">
-
+            <div class="col-12">
+    
+                <div class="mega-ac-container">
+    
+                    <div class="form-floating">
+    
+                        <input id="usuario_id" type="text" name="usuario" class="mega-ac mega-ac--purple form-control form-control-sm" multiple data-bg-selected="success"
+                               autocomplete="off">
+    
+                        <label for="usuario">Nome Usuário</label>
+                    </div>
+    
+    
+                </div>
+    
             </div>
-
+    
+            <div class="col-12 mt-5">
+    
+                <div class="mega-ac-container">
+    
+                        <input type="text" id="fornecedor_id" class="mega-ac mega-ac--secondary form-control form-control-sm" autocomplete="off">
+    
+                </div>
+    
+            </div>
+    
         </div>
 
-        <div class="col-12 mt-5">
-
-            <div class="mega-ac-container">
-
-                    <input type="text" id="fornecedor_id" class="mega-ac mega-ac--secondary form-control form-control-sm" autocomplete="off">
-
-            </div>
-
-        </div>
-
-    </div>
+    </form>
 
     <script src="./mega-autocomplete.js"></script>
 </body>

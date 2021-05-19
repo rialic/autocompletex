@@ -34,9 +34,6 @@ const MegaAutoComplete = (() => {
 
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocompleteContainer => {
-            // const hasAutoCompleteNameAttr = autocomplete.hasAttribute('name');
-            // const hasAutoCompleteIdAttr = autocomplete.hasAttribute('id');
-
             const autocomplete = autocompleteContainer.querySelector('.mega-ac');
             const autocompleteFormFloating = autocomplete.closest('.form-floating');
             const autocompleteList = makeElement.call(this, 'div', { 'class': 'mega-ac-list' });
@@ -44,20 +41,6 @@ const MegaAutoComplete = (() => {
             const autocompleteSelectedCounter = makeElement.call(this, 'div', { 'class': 'mega-ac-selected__counter', 'data-total': 0 });
             const autocompleteSelectedValues = makeElement.call(this, 'input', { 'class': 'mega-ac-selected__values' });
             const autocompleteSelectedList = makeElement.call(this, 'div', { 'class': 'mega-ac-selected-list' });
-
-
-            // if (hasAutoCompleteIdAttr) {
-            //     const autocompleteIdAttr = autocomplete.getAttribute('id');
-
-            //     autocompleteSelectedValues.setAttribute('id', autocompleteIdAttr);
-            // }
-
-            // if (hasAutoCompleteNameAttr) {
-            //     const autocompleteNameAttr = autocomplete.getAttribute('name');
-
-            //     autocomplete.removeAttribute('name');
-            //     autocompleteSelectedValues.setAttribute('name', autocompleteNameAttr);
-            // }
 
             if (autocompleteFormFloating) {
                 const autocompleteColorList = [
@@ -79,7 +62,7 @@ const MegaAutoComplete = (() => {
                 const findAutoCompleteClassColor = classItem => {
                     const hasClassItem = autocompleteColorList.includes(classItem);
 
-                    if(hasClassItem) return classItem;
+                    if (hasClassItem) return classItem;
                 }
                 const autocompleteClassColor = Array.from(autocomplete.classList).find(findAutoCompleteClassColor);
 
@@ -100,7 +83,8 @@ const MegaAutoComplete = (() => {
 
             autocompleteContainer.addEventListener('click', handleAutoCompleteContainerClickEvent.bind(this));
         };
-        const generateAutoCompleteClickEvent = autocomplete => autocomplete.addEventListener('keyup', handleAutoCompleteKeyUpEvent.bind(this));
+        const generateAutoCompleteClickEvent = autocomplete =>
+            autocomplete.addEventListener('keyup', handleAutoCompleteKeyUpEvent.bind(this));
 
         this.autocompleteContainer.forEach(createAutoCompleteComponent);
         this.autocomplete.forEach(generateAutoCompleteClickEvent);
@@ -124,7 +108,7 @@ const MegaAutoComplete = (() => {
         const isAutoCompleteEl = elementClassList.includes('mega-ac');
         const isAutoCompleteListEl = Boolean(element.closest('.mega-ac-list'));
         const isAutoCompleteSelectedEl = elementClassList.includes('mega-ac-selected')
-            || elementClassList.includes('mega-ac-selected__counter');
+                                         || elementClassList.includes('mega-ac-selected__counter');
         const isAutoCompleteRemoveItemEl = elementClassList.includes('mega-ac-selected-list__remove-item');
         const isButtonClearListEl = elementClassList.includes('btn-link');
 
@@ -133,81 +117,25 @@ const MegaAutoComplete = (() => {
         const isDivInputEl = element.tagName === 'DIV';
         const isButtonEl = element.tagName === 'BUTTON';
 
-        const isClickedAutoCompleteEl =  isInputEl && isAutoCompleteEl;
-        const isClickedLiAutoCompleteListEl = isLiInputEl && isAutoCompleteListEl;
-        const isClickedDivAutoCompleteSelectedEl = isDivInputEl && isAutoCompleteSelectedEl;
-        const isClickedDivAutoCompleteRemoveItemEl = isDivInputEl && isAutoCompleteRemoveItemEl;
-        const isClickedButtonClearListEl = isButtonEl && isButtonClearListEl;
-
-        if (isClickedAutoCompleteEl) {
-            const hasAutoCompleteList = Boolean(autocompleteList.querySelector('ul'));
-            const isShowingAutoCompleteList = Array.from(autocomplete.classList).includes('mega-ac--show')
-                || Array.from(autocompleteList.classList).includes('mega-ac-list--show');
-
-            if (hasAutoCompleteList && !isShowingAutoCompleteList) {
-                autocomplete.classList.add('mega-ac--show');
-                autocompleteList.classList.add('mega-ac-list--show');
-            }
-
-            hideAutoCompleteSelectedList.call(this, autocompleteContainer);
-
-            return;
+        const params = {
+            autocompleteContainer, 
+            element, 
+            autocomplete,
+            autocompleteList,
+            autocompleteSelected,
+            autocompleteSelectedList,
+            autocompleteSelectedCounter,
+            autocompleteSelectedValues
         }
+        let clickedEvent = '';
 
-        if (isClickedLiAutoCompleteListEl) {
-            const itemSelected = element;
-            const itemSelectedText = itemSelected.textContent;
-            const isMultipleInput = autocomplete.hasAttribute('multiple');
-            const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
-            const inputSingleMultiple = InputSingleMultiple.call(this);
+        if (isInputEl && isAutoCompleteEl) clickedEvent = 'autocomplete';
+        if (isLiInputEl && isAutoCompleteListEl) clickedEvent = 'autocompleteListItem';
+        if (isDivInputEl && isAutoCompleteSelectedEl) clickedEvent = 'autocompleteSelected';
+        if (isDivInputEl && isAutoCompleteRemoveItemEl) clickedEvent = 'autocompleteRemoveItem';
+        if (isButtonEl && isButtonClearListEl) clickedEvent = 'buttonClearItems';
 
-            if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
-
-            //INPUT SIMPLES OU MÚLTIPLO
-            inputSingleMultiple.setStrategy.call(this, typeInput);
-            inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
-        }
-
-        if (isClickedDivAutoCompleteSelectedEl) {
-            hideAutoCompleteList.call(this, autocompleteContainer);
-            showAutoCompleteSelectedList.call(this, autocompleteContainer);
-        }
-
-        if (isClickedDivAutoCompleteRemoveItemEl) {
-            let selectedList = JSON.parse(autocompleteSelectedValues.value);
-
-            const itemSelectedText = element.previousElementSibling.textContent;
-            const totalSelected = Number(autocompleteSelectedCounter.dataset.total) - 1;
-            const isEmptyTotalSelected = totalSelected === 0;
-
-            selectedList = selectedList.filter(selecteItem => selecteItem !== itemSelectedText);
-
-            autocompleteSelectedCounter.textContent = (isEmptyTotalSelected) ? '' : totalSelected;
-            autocompleteSelectedCounter.dataset.total = totalSelected;
-            autocompleteSelectedValues.value = (isEmptyTotalSelected) ? '' : JSON.stringify(selectedList);
-
-            removeAutoCompleteSelectedList.call(this, autocompleteContainer);
-
-            if (isEmptyTotalSelected) {
-                autocompleteSelected.classList.remove('mega-ac-selected--show');
-                hideAutoCompleteSelectedList.call(this, autocompleteContainer);
-
-                return;
-            }
-
-            mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
-            showAutoCompleteSelectedList.call(this, autocompleteContainer);
-        }
-
-        if (isClickedButtonClearListEl) {
-            autocompleteSelectedCounter.dataset.total = 0;
-            autocompleteSelectedCounter.innerText = '';
-            autocompleteSelectedValues.value = '';
-
-            autocompleteSelected.classList.remove('mega-ac-selected--show');
-            removeAutoCompleteSelectedList.call(this, autocompleteContainer);
-            hideAutoCompleteSelectedList.call(this, autocompleteContainer);
-        }
+        fireClickEvents.call(this, clickedEvent, params);
     }
 
     function handleAutoCompleteContainerBlurEvent(event) {
@@ -247,17 +175,17 @@ const MegaAutoComplete = (() => {
             autocompleteListItems,
         } = getAutoCompleteVariables.call(this, autocompleteContainer);
 
+        const keyVal = event.key;
+        const hasUrl = Boolean(this.options.url);
         const autocompleteVal = autocomplete.value;
         const autocompleteValLenght = autocomplete.value.length;
-        const hasUrl = Boolean(this.options.url);
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
+        const hasRequiredParams = hasUrl && autocompleteVal && hasMoreThanThreeLetters;
 
-        const keyVal = event.key;
+        if (hasRequiredParams) {
+            const params = { autocompleteContainer, autocompleteList, autocompleteListItems, autocomplete, autocompleteVal };
 
-        if (hasUrl && autocompleteVal && hasMoreThanThreeLetters) {
-            const params = {autocompleteContainer, autocompleteList, autocompleteListItems, autocomplete, autocompleteVal};
-
-            fireEvents.call(this, keyVal, params);
+            fireKeyEvents.call(this, keyVal, params);
         }
 
         if (!autocompleteVal || !hasMoreThanThreeLetters) removeAutoCompleteList.call(this, autocompleteContainer);
@@ -324,8 +252,8 @@ const MegaAutoComplete = (() => {
         const ulEl = (hasItemsInSelectedList) ? autocompleteSelectedList.querySelector('ul')
             : makeElement.call(this, 'ul');
         const generateList = item => {
-            const divWrapperEl = makeElement.call(this, 'div', {class: 'd-flex align-items-center justify-content-between'});
-            const divRemoveIconEl = makeElement.call(this, 'div', {class: 'mega-ac-selected-list__remove-item'});
+            const divWrapperEl = makeElement.call(this, 'div', { class: 'd-flex align-items-center justify-content-between' });
+            const divRemoveIconEl = makeElement.call(this, 'div', { class: 'mega-ac-selected-list__remove-item' });
             const spanTextEl = makeElement.call(this, 'span');
             const liEl = makeElement.call(this, 'li');
 
@@ -341,8 +269,8 @@ const MegaAutoComplete = (() => {
         filteredList.forEach(generateList);
 
         if (!hasItemsInSelectedList) {
-            const divEl = makeElement.call(this, 'div', {class: 'd-flex justify-content-end'});
-            const buttonEl = makeElement.call(this, 'button', {class: 'btn btn-sm btn-link text-decoration-none'});
+            const divEl = makeElement.call(this, 'div', { class: 'd-flex justify-content-end' });
+            const buttonEl = makeElement.call(this, 'button', { type: 'button', class: 'btn btn-sm btn-link text-decoration-none' });
 
             buttonEl.textContent = 'Limpar Lista';
 
@@ -355,11 +283,11 @@ const MegaAutoComplete = (() => {
 
     async function fetchData(url, data) {
         try {
-            const headers = {'Accept': 'application/json','Content-Type': 'application/json'};
+            const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
             const method = this.options.method;
             const body = JSON.stringify(data);
 
-            const response = (method === 'GET') ? await fetch(url, {headers, method}) : await fetch(url, {headers, method, body});
+            const response = (method === 'GET') ? await fetch(url, { headers, method }) : await fetch(url, { headers, method, body });
 
             const hasGetVal = Boolean(this.options.getVal);
             const isStringGetVal = typeof this.options.getVal === 'string';
@@ -375,11 +303,11 @@ const MegaAutoComplete = (() => {
 
             return (await response.json());
         } catch (error) {
-            return {'status': 'error', 'message': `${error.message}`};
+            return { 'status': 'error', 'message': `${error.message}` };
         }
     }
 
-    function fireTypingEvent (params) {
+    function fireTypingEvent(params) {
         clearTimeout(this.timeoutId);
 
         this.timeoutId = setTimeout(async () => {
@@ -452,8 +380,140 @@ const MegaAutoComplete = (() => {
     }
 
     function fireEnterEvent(params) {
-        const { autocompleteContainer, autocompleteListItems, autocomplete } = params;
+        const { autocompleteContainer, autocompleteList, autocompleteListItems, autocomplete } = params;
+        const hasList = autocompleteList.hasChildNodes();
         const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
+
+        if(hasList, itemSelected) {
+            const itemSelectedText = itemSelected.textContent;
+            const isMultipleInput = autocomplete.hasAttribute('multiple');
+            const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
+            const inputSingleMultiple = InputSingleMultiple.call(this);
+
+            if (itemSelectedText === 'Não há resultados para essa pesquisa') return;
+
+            //INPUT SIMPLES OU MÚLTIPLO
+            inputSingleMultiple.setStrategy.call(this, typeInput);
+            inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
+        }
+    }
+
+    function fireArrowUpEvent(params) {
+        const { autocompleteList, autocompleteListItems } = params;
+        const hasList = autocompleteList.hasChildNodes();
+
+        if(hasList) {
+            const ulEl = autocompleteListItems[0].parentElement;
+            const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
+
+            const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
+            const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+
+            if (hasSelectedItem) {
+                const navigateList = (liEl, index) => {
+                    const ulEl = liEl.parentElement;
+                    const scrollPos = liEl.offsetTop;
+                    const isEqualIndex = (selectedIndex - 1) === index;
+                    const isFirstIndex = selectedIndex === 0;
+
+                    if (isFirstIndex) return;
+
+                    if (isEqualIndex) {
+                        liEl.nextElementSibling.classList.remove('selected');
+                        liEl.classList.add('selected');
+
+                        ulEl.scrollTop = scrollPos;
+                    }
+                }
+
+                autocompleteListItems.forEach(navigateList);
+
+                return;
+            }
+
+            ulEl.scrollTop = lastLiEl.offsetTop;
+            lastLiEl.classList.add('selected');
+        }
+    }
+
+
+    function fireArrowDownEvent(params) {
+        const { autocompleteList, autocompleteListItems } = params;
+        const hasList = autocompleteList.hasChildNodes();
+
+        if(hasList) {
+            const firstLiEl = autocompleteListItems[0];
+            const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
+            const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+
+            if (hasSelectedItem) {
+                const navigateList = (liEl, index, list) => {
+                    const ulEl = liEl.parentElement;
+                    const scrollPos = liEl.offsetTop;
+                    const isEqualIndex = (selectedIndex + 1) === index;
+                    const isLastIndex = selectedIndex === list.length;
+
+                    if (isLastIndex) return;
+
+                    if (isEqualIndex) {
+                        liEl.previousElementSibling.classList.remove('selected');
+                        liEl.classList.add('selected');
+
+                        ulEl.scrollTop = scrollPos;
+                    }
+                }
+
+                autocompleteListItems.forEach(navigateList);
+
+                return;
+            }
+
+            firstLiEl.classList.add('selected');
+        }
+    }
+
+    function fireKeyEvents(type, params) {
+        const typeEvent = {
+            'Enter': fireEnterEvent,
+            'ArrowUp': fireArrowUpEvent,
+            'ArrowDown': fireArrowDownEvent,
+            'default': fireTypingEvent
+        };
+
+        return (typeEvent[type] || typeEvent['default']).call(this, params);
+    }
+
+    function fireClickEvents(type, params) {
+        const typeEvent = {
+            'autocomplete': fireAutoCompleteClickedEvent,
+            'autocompleteSelected': fireAutoCompleteSelectedClickedEvent,
+            'autocompleteListItem': fireAutoCompleteListItemClickedEvent,
+            'autocompleteRemoveItem': fireAutocompleteRemoveItemClickedEvent,
+            'buttonClearItems': fireButtoClearItemsClickedEvent,
+            'default' : () => {return}
+        };
+
+        return (typeEvent[type] || typeEvent['default']).call(this, params);
+    }
+
+    function fireAutoCompleteClickedEvent(params) {
+        const { autocompleteContainer, autocomplete, autocompleteList } = params;
+
+        const hasAutoCompleteList = Boolean(autocompleteList.querySelector('ul'));
+        const isShowingAutoCompleteList = Array.from(autocomplete.classList).includes('mega-ac--show')
+            || Array.from(autocompleteList.classList).includes('mega-ac-list--show');
+
+        if (hasAutoCompleteList && !isShowingAutoCompleteList) {
+            autocomplete.classList.add('mega-ac--show');
+            autocompleteList.classList.add('mega-ac-list--show');
+        }
+
+        hideAutoCompleteSelectedList.call(this, autocompleteContainer);
+    }
+
+    function fireAutoCompleteListItemClickedEvent(params) {
+        const { autocompleteContainer, element, autocomplete } = params;
+        const itemSelected = element;
         const itemSelectedText = itemSelected.textContent;
         const isMultipleInput = autocomplete.hasAttribute('multiple');
         const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
@@ -466,82 +526,62 @@ const MegaAutoComplete = (() => {
         inputSingleMultiple.define.call(this, autocompleteContainer, itemSelectedText);
     }
 
-    function fireArrowUpEvent(params) {
-        const { autocompleteListItems } = params;
-        const ulEl = autocompleteListItems[0].parentElement;
-        const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
+    function fireAutoCompleteSelectedClickedEvent(params) {
+        const { autocompleteContainer } = params;
+        hideAutoCompleteList.call(this, autocompleteContainer);
+        showAutoCompleteSelectedList.call(this, autocompleteContainer);
+    }
 
-        const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
-        const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
+    function fireAutocompleteRemoveItemClickedEvent(params) {
+        const {
+            autocompleteContainer,
+            element,
+            autocompleteSelected,
+            autocompleteSelectedList,
+            autocompleteSelectedCounter,
+            autocompleteSelectedValues 
+        } = params;
 
-        if (hasSelectedItem) {
-            const navigateList = (liEl, index) => {
-                const ulEl = liEl.parentElement;
-                const scrollPos = liEl.offsetTop;
-                const isEqualIndex = (selectedIndex - 1) === index;
-                const isFirstIndex = selectedIndex === 0;
+        let selectedList = JSON.parse(autocompleteSelectedValues.value);
+        
+        const itemSelectedText = element.previousElementSibling.textContent;
+        const totalSelected = Number(autocompleteSelectedCounter.dataset.total) - 1;
+        const isEmptyTotalSelected = totalSelected === 0;
 
-                if (isFirstIndex) return;
+        selectedList = selectedList.filter(selecteItem => selecteItem !== itemSelectedText);
 
-                if (isEqualIndex) {
-                    liEl.nextElementSibling.classList.remove('selected');
-                    liEl.classList.add('selected');
+        autocompleteSelectedCounter.textContent = (isEmptyTotalSelected) ? '' : totalSelected;
+        autocompleteSelectedCounter.dataset.total = totalSelected;
+        autocompleteSelectedValues.value = (isEmptyTotalSelected) ? '' : JSON.stringify(selectedList);
 
-                    ulEl.scrollTop = scrollPos;
-                }
-            }
+        removeAutoCompleteSelectedList.call(this, autocompleteContainer);
 
-            autocompleteListItems.forEach(navigateList);
+        if (isEmptyTotalSelected) {
+            autocompleteSelected.classList.remove('mega-ac-selected--show');
+            hideAutoCompleteSelectedList.call(this, autocompleteContainer);
 
             return;
         }
 
-        ulEl.scrollTop = lastLiEl.offsetTop;
-        lastLiEl.classList.add('selected');
+        mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+        showAutoCompleteSelectedList.call(this, autocompleteContainer);
     }
 
+    function fireButtoClearItemsClickedEvent(params) {
+        const {
+            autocompleteContainer,
+            autocompleteSelected,
+            autocompleteSelectedValues,
+            autocompleteSelectedCounter
+        } = params;
 
-    function fireArrowDownEvent(params) {
-        const { autocompleteListItems } = params;
-        const firstLiEl = autocompleteListItems[0];
+        autocompleteSelectedCounter.dataset.total = 0;
+        autocompleteSelectedCounter.innerText = '';
+        autocompleteSelectedValues.value = '';
 
-        const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
-        const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
-
-        if (hasSelectedItem) {
-            const navigateList = (liEl, index, list) => {
-                const ulEl = liEl.parentElement;
-                const scrollPos = liEl.offsetTop;
-                const isEqualIndex = (selectedIndex + 1) === index;
-                const isLastIndex = selectedIndex === list.length;
-
-                if (isLastIndex) return;
-
-                if (isEqualIndex) {
-                    liEl.previousElementSibling.classList.remove('selected');
-                    liEl.classList.add('selected');
-
-                    ulEl.scrollTop = scrollPos;
-                }
-            }
-
-            autocompleteListItems.forEach(navigateList);
-
-            return;
-        }
-
-        firstLiEl.classList.add('selected');
-    }
-
-    function fireEvents(type, params) {
-        const typeEvent = {
-            'Enter': fireEnterEvent,
-            'ArrowUp' : fireArrowUpEvent,
-            'ArrowDown' : fireArrowDownEvent,
-            'default' : fireTypingEvent
-        };
-
-        return (typeEvent[type] || typeEvent['default']).call(this, params);
+        autocompleteSelected.classList.remove('mega-ac-selected--show');
+        removeAutoCompleteSelectedList.call(this, autocompleteContainer);
+        hideAutoCompleteSelectedList.call(this, autocompleteContainer);
     }
 
     function InputSingleMultiple() {
@@ -552,7 +592,7 @@ const MegaAutoComplete = (() => {
             this.inputType.define.call(this, autocompleteContainer, itemSelectedText);
         }
 
-        return {setStrategy, define};
+        return { setStrategy, define };
     }
 
     function SingleInput() {
@@ -564,7 +604,7 @@ const MegaAutoComplete = (() => {
             removeAutoCompleteList.call(this, autocompleteContainer);
         }
 
-        return {define};
+        return { define };
     }
 
     function MultipleInput() {
@@ -599,7 +639,7 @@ const MegaAutoComplete = (() => {
             removeAutoCompleteList.call(this, autocompleteContainer);
         }
 
-        return {define};
+        return { define };
     }
 
     const makeElement = (elementName, attributes = {}) => {
