@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Auto Complete Bootstrap</title>
 </head>
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 
 <body>
 
-    <form action="www.google.com.br">
+    <form action="#">
         
         <div class="row m-5">
 
@@ -24,10 +24,10 @@
     
                     <div class="form-floating">
     
-                        <input id="usuario_id" type="text" name="usuario" class="mega-ac mega-ac--purple form-control form-control-sm" multiple data-bg-selected="success"
+                        <input id="input_one" type="text" name="input_one" class="mega-ac mega-ac--purple form-control form-control-sm" multiple data-bg-selected="success"
                                autocomplete="off">
     
-                        <label for="usuario">Nome Usuário</label>
+                        <label for="input_one">Auto Complete</label>
                     </div>
     
     
@@ -39,7 +39,7 @@
     
                 <div class="mega-ac-container">
     
-                        <input type="text" id="fornecedor_id" class="mega-ac mega-ac--secondary form-control form-control-sm" autocomplete="off">
+                    <input id="input_two" type="text" class="mega-ac mega-ac--secondary form-control form-control-sm" autocomplete="off">
     
                 </div>
     
@@ -50,6 +50,7 @@
     </form>
 
     <script src="./mega-autocomplete.js"></script>
+    <script src="./index.js"></script>
 </body>
 
 </html>

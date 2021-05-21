@@ -16,6 +16,7 @@ const MegaAutoComplete = (() => {
     HTMLInputElement.prototype.megaAutoComplete = function (options = {}) {
         const hasUrl = Boolean(options.url);
         const hasMethod = Boolean(options.method);
+            const hasQueryParam = Boolean(options.queryParam);
         const hasData = Boolean(options.data);
         const hasFilter = Boolean(options.matchFilter);
 
@@ -25,8 +26,9 @@ const MegaAutoComplete = (() => {
 
         if (isMegaAutoComplete && hasUrl) {
             megaAutoComplete.options.url = options.url;
-            megaAutoComplete.options.method = hasMethod ? options.method : 'GET';
-            megaAutoComplete.options.data = hasData ? options.data : '';
+            megaAutoComplete.options.method = (hasMethod) ? options.method : 'GET';
+            megaAutoComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
+            megaAutoComplete.options.data = (hasData) ? options.data : '';
             megaAutoComplete.options.matchFilter = hasFilter;
             megaAutoComplete.options.getVal = options.getVal;
         }
@@ -108,7 +110,7 @@ const MegaAutoComplete = (() => {
         const isAutoCompleteEl = elementClassList.includes('mega-ac');
         const isAutoCompleteListEl = Boolean(element.closest('.mega-ac-list'));
         const isAutoCompleteSelectedEl = elementClassList.includes('mega-ac-selected')
-                                         || elementClassList.includes('mega-ac-selected__counter');
+            || elementClassList.includes('mega-ac-selected__counter');
         const isAutoCompleteRemoveItemEl = elementClassList.includes('mega-ac-selected-list__remove-item');
         const isButtonClearListEl = elementClassList.includes('btn-link');
 
@@ -118,8 +120,8 @@ const MegaAutoComplete = (() => {
         const isButtonEl = element.tagName === 'BUTTON';
 
         const params = {
-            autocompleteContainer, 
-            element, 
+            autocompleteContainer,
+            element,
             autocomplete,
             autocompleteList,
             autocompleteSelected,
@@ -287,7 +289,7 @@ const MegaAutoComplete = (() => {
             const method = this.options.method;
             const body = JSON.stringify(data);
 
-            const response = (method === 'GET') ? await fetch(url, { headers, method }) : await fetch(url, { headers, method, body });
+            const response = (method === 'GET') ? await fetch(url, { headers, method}) : await fetch(url, { headers, method, body });
 
             const hasGetVal = Boolean(this.options.getVal);
             const isStringGetVal = typeof this.options.getVal === 'string';
@@ -298,7 +300,11 @@ const MegaAutoComplete = (() => {
             if (hasGetVal) {
                 if (isStringGetVal) return (await response.json())[this.options.getVal];
 
-                if (isFunctionGetVal) return this.options.getVal((await response.json()));
+                if (isFunctionGetVal) {
+                    const responseJSON = await response.json();
+
+                    return responseJSON.map(item => this.options.getVal(item));
+                }
             }
 
             return (await response.json());
@@ -314,11 +320,21 @@ const MegaAutoComplete = (() => {
             let filteredList;
 
             const { autocompleteContainer, autocompleteList, autocompleteVal } = params;
-            const method = this.options.method;
-            const url = (method === 'GET') ? `${this.options.url}${autocompleteVal}` : this.options.url;
-            // const responseData = await fetchData.call(this, url, this.options.data);
-            // const hasRequestError = responseData.status === 'error';
-            const generateList = item => item;
+            const url = makeUrl.call(this, autocompleteVal);
+            const responseData = await fetchData.call(this, url, this.options.data);
+            const hasRequestError = responseData.status === 'error';
+            const generateList = (acc, item) => {
+                const hasItem = Boolean(item);
+                const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
+
+                if (hasItem) {
+                    if (hasDefaultResultList) acc.pop();
+
+                    acc.push(item);
+                }
+
+                return acc;
+            };
             const generateFiltredList = (acc, item) => {
                 const isItemMatching = item.toLowerCase().includes(autocompleteVal.toLowerCase());
                 const hasDefaultResultList = acc.includes('Não há resultados para essa pesquisa');
@@ -332,51 +348,16 @@ const MegaAutoComplete = (() => {
                 return acc;
             }
 
-            // this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : [responseData];
-
-            this.suggestions = [
-                "Channel",
-                "CodingLab",
-                "CodingNepal",
-                "YouTube",
-                "YouTuber",
-                "YouTube Channel",
-                "Blogger",
-                "Bollywood",
-                "Vlogger",
-                "Vechiles",
-                "Facebook",
-                "Freelancer",
-                "Facebook Page",
-                "Designer",
-                "Developer",
-                "Web Designer",
-                "Web Developer",
-                "Login Form in HTML & CSS",
-                "How to learn HTML & CSS",
-                "How to learn JavaScript",
-                "How to became Freelancer",
-                "How to became Web Designer",
-                "How to start Gaming Channel",
-                "How to start YouTube Channel",
-                "How to start Programing",
-                "How to become smart person",
-                "How to think fast",
-                "How can I become a day trader",
-                "How to lose weight",
-                "What does HTML stands for?",
-                "What does CSS stands for?",
-                "Vira Lata - (SRD) Sem Raça Definida no geral",
-            ]
+            this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : responseData;
 
             filteredList = (this.options.matchFilter)
                 ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
-                : this.suggestions.map(generateList);
+                : this.suggestions.reduce(generateList, ['Não há resultados para essa pesquisa']);
 
             removeAutoCompleteList.call(this, autocompleteContainer);
             mountAutoCompleteList.call(this, autocompleteList, filteredList);
             showAutoCompleteList.call(this, autocompleteContainer);
-        }, 1000);
+        }, 750);
     }
 
     function fireEnterEvent(params) {
@@ -539,11 +520,11 @@ const MegaAutoComplete = (() => {
             autocompleteSelected,
             autocompleteSelectedList,
             autocompleteSelectedCounter,
-            autocompleteSelectedValues 
+            autocompleteSelectedValues
         } = params;
 
         let selectedList = JSON.parse(autocompleteSelectedValues.value);
-        
+
         const itemSelectedText = element.previousElementSibling.textContent;
         const totalSelected = Number(autocompleteSelectedCounter.dataset.total) - 1;
         const isEmptyTotalSelected = totalSelected === 0;
@@ -642,7 +623,27 @@ const MegaAutoComplete = (() => {
         return { define };
     }
 
-    const makeElement = (elementName, attributes = {}) => {
+    function makeUrl(autocompleteVal) {
+        const hasData = Boolean(this.options.data);
+        const hasQueryParam = Boolean(this.options.queryParam);
+        const method = this.options.method;
+
+        if (method === 'GET') {
+            if(hasData) {
+                this.options.data[this.options.queryParam] = autocompleteVal;
+
+                return this.options.url + '?' + serialize(this.options.data);
+            }
+
+            if(hasQueryParam) return this.options.url + '?' + serialize({[this.options.queryParam]: autocompleteVal});
+
+            return this.options.url;
+        }
+
+        return this.options.url;
+    }
+
+    function makeElement(elementName, attributes = {}) {
         const isValidStringEl = typeof elementName === 'string' && Boolean(elementName);
         const isValidObjectAttr = typeof attributes === 'object' && Boolean(attributes);
 
@@ -657,7 +658,23 @@ const MegaAutoComplete = (() => {
         }
     }
 
-    const getAutoCompleteVariables = (autocompleteContainer) => {
+    function serialize(object) {
+        let encodedString = '';
+
+        for (let prop in object) {
+            if (object.hasOwnProperty(prop)) {
+                if (encodedString.length > 0) {
+                    encodedString += '&';
+                }
+
+                encodedString += encodeURI(prop + '=' + object[prop]);
+            }
+        }
+
+        return encodedString;
+    }
+
+    function getAutoCompleteVariables(autocompleteContainer) {
         const autocomplete = autocompleteContainer.querySelector('.mega-ac');
         const autocompleteList = autocompleteContainer.querySelector('.mega-ac-list');
         const autocompleteListItems = Array.from(autocompleteContainer.querySelectorAll('.mega-ac-list li'));
@@ -679,15 +696,3 @@ const MegaAutoComplete = (() => {
 
     document.addEventListener('DOMContentLoaded', () => megaAutoComplete.enable());
 })();
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const autocomplete = document.querySelector('.mega-ac');
-    const options = {
-        url: 'https://pokeapi.co/api/v2/pokemon/',
-        matchFilter: true,
-        getVal: 'name'
-    };
-
-    autocomplete.megaAutoComplete(options);
-});
