@@ -3,6 +3,8 @@ const MegaAutoComplete = (() => {
 
     function MegaAutoComplete() {
         this.options = {};
+        this.maxItemLimit = 5;
+        this.avgItemLimit = 3;
         this.suggestions;
         this.timeoutId;
         this.autocompleteContainer = document.querySelectorAll('.mega-ac-container');
@@ -16,9 +18,10 @@ const MegaAutoComplete = (() => {
     HTMLInputElement.prototype.megaAutoComplete = function (options = {}) {
         const hasUrl = Boolean(options.url);
         const hasMethod = Boolean(options.method);
-            const hasQueryParam = Boolean(options.queryParam);
+        const hasQueryParam = Boolean(options.queryParam);
         const hasData = Boolean(options.data);
         const hasFilter = Boolean(options.matchFilter);
+        const hasItemLimit = Boolean(options.itemLimit);
 
         const isInputTag = this.tagName === 'INPUT';
         const isAutoComplete = Array.from(this.classList).includes('mega-ac');
@@ -30,6 +33,7 @@ const MegaAutoComplete = (() => {
             megaAutoComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
             megaAutoComplete.options.data = (hasData) ? options.data : '';
             megaAutoComplete.options.matchFilter = hasFilter;
+            megaAutoComplete.options.itemLimit = hasItemLimit ? options.itemLimit : megaAutoComplete.avgItemLimit;
             megaAutoComplete.options.getVal = options.getVal;
         }
     }
@@ -602,19 +606,26 @@ const MegaAutoComplete = (() => {
             const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
             const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
             const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
+            
+            const isNotInRangeMaxLimit = this.options.itemLimit <= this.maxItemLimit;
+            const isNotInRangeSelectedLimit = this.options.itemLimit >= totalSelected;
 
             autocomplete.value = '';
 
-            if (!isItemAlreadySelected) {
-                selectedList.push(itemSelectedText.trim());
-                autocompleteSelectedValues.value = JSON.stringify(selectedList);
+            if (isNotInRangeMaxLimit && isNotInRangeSelectedLimit) {
 
-                autocompleteSelected.classList.add('mega-ac-selected--show');
-                autocompleteSelectedCounter.dataset.total = totalSelected;
-                autocompleteSelectedCounter.textContent = totalSelected;
+                if (!isItemAlreadySelected) {
+                    selectedList.push(itemSelectedText.trim());
+                    autocompleteSelectedValues.value = JSON.stringify(selectedList);
 
-                removeAutoCompleteSelectedList.call(this, autocompleteContainer);
-                mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+                    autocompleteSelected.classList.add('mega-ac-selected--show');
+                    autocompleteSelectedCounter.dataset.total = totalSelected;
+                    autocompleteSelectedCounter.textContent = totalSelected;
+
+                    removeAutoCompleteSelectedList.call(this, autocompleteContainer);
+                    mountAutoCompleteSelectedList.call(this, autocompleteSelectedList, selectedList);
+                }
+
             }
 
             removeAutoCompleteList.call(this, autocompleteContainer);
