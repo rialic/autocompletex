@@ -1,5 +1,5 @@
 const MegaAutoComplete = (() => {
-    const megaAutoComplete = new MegaAutoComplete()
+    const megaAutoComplete = new MegaAutoComplete();
 
     function MegaAutoComplete() {
         this.options = {};
@@ -11,32 +11,62 @@ const MegaAutoComplete = (() => {
         this.autocomplete = document.querySelectorAll('.mega-ac');
     }
 
-    MegaAutoComplete.prototype.enable = function () {
+    MegaAutoComplete.prototype.enable = function() {
         initMegaAutoComplete.call(this);
     }
 
-    HTMLInputElement.prototype.megaAutoComplete = function (options = {}) {
+    HTMLInputElement.prototype.megaAutoComplete = function(options = {}) {
+        const inMegaComplete = {...megaAutoComplete};
         const hasUrl = Boolean(options.url);
-        const hasMethod = Boolean(options.method);
         const hasQueryParam = Boolean(options.queryParam);
         const hasData = Boolean(options.data);
         const hasFilter = Boolean(options.matchFilter);
         const hasItemLimit = Boolean(options.itemLimit);
 
-        const isInputTag = this.tagName === 'INPUT';
-        const isAutoComplete = Array.from(this.classList).includes('mega-ac');
-        const isMegaAutoComplete = isAutoComplete && isInputTag;
+        if (isMegaAutoCompleteElement(this) && hasUrl) {
+            inMegaComplete.options.url = options.url;
+            inMegaComplete.options.method = 'GET';
+            inMegaComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
+            inMegaComplete.options.data = (hasData) ? options.data : '';
+            inMegaComplete.options.matchFilter = hasFilter;
+            inMegaComplete.options.itemLimit = (hasItemLimit) ?
+             ((options.itemLimit > inMegaComplete.maxItemLimit) ? inMegaComplete.maxItemLimit : options.itemLimit) :
+             inMegaComplete.avgItemLimit;
+            inMegaComplete.options.getVal = options.getVal;
+        }
 
-        if (isMegaAutoComplete && hasUrl) {
-            megaAutoComplete.options.url = options.url;
-            megaAutoComplete.options.method = (hasMethod) ? options.method : 'GET';
-            megaAutoComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
-            megaAutoComplete.options.data = (hasData) ? options.data : '';
-            megaAutoComplete.options.matchFilter = hasFilter;
-            megaAutoComplete.options.itemLimit = hasItemLimit ? options.itemLimit : megaAutoComplete.avgItemLimit;
-            megaAutoComplete.options.getVal = options.getVal;
+        console.log(inMegaComplete === megaAutoComplete);
+    }
+
+    HTMLInputElement.prototype.megaAutoCompleteVal = function() {
+        if (isMegaAutoCompleteElement(this)) {
+            const element = this;
+            const autocompleteContainer = element.closest('.mega-ac-container');
+            const { autocompleteSelectedValues } = getAutoCompleteVariables.call(this, autocompleteContainer);
+
+            return autocompleteSelectedValues.value;
         }
     }
+
+    HTMLInputElement.prototype.megaAutoCompleteReset = function() {
+        if (isMegaAutoCompleteElement(this)) {
+            const element = this;
+            const autocompleteContainer = element.closest('.mega-ac-container');
+            const {
+                autocompleteSelected,
+                autocompleteSelectedValues,
+                autocompleteSelectedCounter
+            } = getAutoCompleteVariables.call(this, autocompleteContainer);
+            const params = {
+                autocompleteContainer,
+                autocompleteSelected,
+                autocompleteSelectedValues,
+                autocompleteSelectedCounter
+            };
+
+            fireButtonClearItemsClickedEvent.call(this, params);
+        }
+    };
 
     function initMegaAutoComplete() {
         const createAutoCompleteComponent = autocompleteContainer => {
@@ -69,7 +99,7 @@ const MegaAutoComplete = (() => {
                     const hasClassItem = autocompleteColorList.includes(classItem);
 
                     if (hasClassItem) return classItem;
-                }
+                };
                 const autocompleteClassColor = Array.from(autocomplete.classList).find(findAutoCompleteClassColor);
 
                 autocomplete.classList.remove(autocompleteClassColor);
@@ -113,8 +143,8 @@ const MegaAutoComplete = (() => {
 
         const isAutoCompleteEl = elementClassList.includes('mega-ac');
         const isAutoCompleteListEl = Boolean(element.closest('.mega-ac-list'));
-        const isAutoCompleteSelectedEl = elementClassList.includes('mega-ac-selected')
-            || elementClassList.includes('mega-ac-selected__counter');
+        const isAutoCompleteSelectedEl = elementClassList.includes('mega-ac-selected') ||
+            elementClassList.includes('mega-ac-selected__counter');
         const isAutoCompleteRemoveItemEl = elementClassList.includes('mega-ac-selected-list__remove-item');
         const isButtonClearListEl = elementClassList.includes('btn-link');
 
@@ -255,8 +285,7 @@ const MegaAutoComplete = (() => {
 
     function mountAutoCompleteSelectedList(autocompleteSelectedList, filteredList) {
         const hasItemsInSelectedList = autocompleteSelectedList.hasChildNodes();
-        const ulEl = (hasItemsInSelectedList) ? autocompleteSelectedList.querySelector('ul')
-            : makeElement.call(this, 'ul');
+        const ulEl = (hasItemsInSelectedList) ? autocompleteSelectedList.querySelector('ul') : makeElement.call(this, 'ul');
         const generateList = item => {
             const divWrapperEl = makeElement.call(this, 'div', { class: 'd-flex align-items-center justify-content-between' });
             const divRemoveIconEl = makeElement.call(this, 'div', { class: 'mega-ac-selected-list__remove-item' });
@@ -291,13 +320,12 @@ const MegaAutoComplete = (() => {
         try {
             const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
             const method = this.options.method;
-            const body = JSON.stringify(data);
-
-            const response = (method === 'GET') ? await fetch(url, { headers, method}) : await fetch(url, { headers, method, body });
 
             const hasGetVal = Boolean(this.options.getVal);
             const isStringGetVal = typeof this.options.getVal === 'string';
             const isFunctionGetVal = typeof this.options.getVal === 'function';
+
+            const response = await fetch(url, { headers, method });
 
             if (!response.ok) throw new Error('Não foi possível obter os dados da requisição');
 
@@ -354,9 +382,9 @@ const MegaAutoComplete = (() => {
 
             this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : responseData;
 
-            filteredList = (this.options.matchFilter)
-                ? this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa'])
-                : this.suggestions.reduce(generateList, ['Não há resultados para essa pesquisa']);
+            filteredList = (this.options.matchFilter) ?
+                this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa']) :
+                this.suggestions.reduce(generateList, ['Não há resultados para essa pesquisa']);
 
             removeAutoCompleteList.call(this, autocompleteContainer);
             mountAutoCompleteList.call(this, autocompleteList, filteredList);
@@ -369,7 +397,7 @@ const MegaAutoComplete = (() => {
         const hasList = autocompleteList.hasChildNodes();
         const itemSelected = autocompleteListItems.find(liEl => Array.from(liEl.classList).includes('selected'));
 
-        if(hasList, itemSelected) {
+        if (hasList, itemSelected) {
             const itemSelectedText = itemSelected.textContent;
             const isMultipleInput = autocomplete.hasAttribute('multiple');
             const typeInput = (isMultipleInput) ? MultipleInput.call(this) : SingleInput.call(this);
@@ -387,7 +415,7 @@ const MegaAutoComplete = (() => {
         const { autocompleteList, autocompleteListItems } = params;
         const hasList = autocompleteList.hasChildNodes();
 
-        if(hasList) {
+        if (hasList) {
             const ulEl = autocompleteListItems[0].parentElement;
             const lastLiEl = autocompleteListItems[autocompleteListItems.length - 1];
 
@@ -426,7 +454,7 @@ const MegaAutoComplete = (() => {
         const { autocompleteList, autocompleteListItems } = params;
         const hasList = autocompleteList.hasChildNodes();
 
-        if(hasList) {
+        if (hasList) {
             const firstLiEl = autocompleteListItems[0];
             const hasSelectedItem = autocompleteListItems.some(liEl => Array.from(liEl.classList).includes('selected'));
             const selectedIndex = autocompleteListItems.findIndex(liEl => Array.from(liEl.classList).includes('selected'));
@@ -474,8 +502,8 @@ const MegaAutoComplete = (() => {
             'autocompleteSelected': fireAutoCompleteSelectedClickedEvent,
             'autocompleteListItem': fireAutoCompleteListItemClickedEvent,
             'autocompleteRemoveItem': fireAutocompleteRemoveItemClickedEvent,
-            'buttonClearItems': fireButtoClearItemsClickedEvent,
-            'default' : () => {return}
+            'buttonClearItems': fireButtonClearItemsClickedEvent,
+            'default': () => { return }
         };
 
         return (typeEvent[type] || typeEvent['default']).call(this, params);
@@ -485,8 +513,8 @@ const MegaAutoComplete = (() => {
         const { autocompleteContainer, autocomplete, autocompleteList } = params;
 
         const hasAutoCompleteList = Boolean(autocompleteList.querySelector('ul'));
-        const isShowingAutoCompleteList = Array.from(autocomplete.classList).includes('mega-ac--show')
-            || Array.from(autocompleteList.classList).includes('mega-ac-list--show');
+        const isShowingAutoCompleteList = Array.from(autocomplete.classList).includes('mega-ac--show') ||
+            Array.from(autocompleteList.classList).includes('mega-ac-list--show');
 
         if (hasAutoCompleteList && !isShowingAutoCompleteList) {
             autocomplete.classList.add('mega-ac--show');
@@ -552,7 +580,7 @@ const MegaAutoComplete = (() => {
         showAutoCompleteSelectedList.call(this, autocompleteContainer);
     }
 
-    function fireButtoClearItemsClickedEvent(params) {
+    function fireButtonClearItemsClickedEvent(params) {
         const {
             autocompleteContainer,
             autocompleteSelected,
@@ -606,7 +634,7 @@ const MegaAutoComplete = (() => {
             const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
             const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
             const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
-            
+
             const isNotInRangeMaxLimit = this.options.itemLimit <= this.maxItemLimit;
             const isNotInRangeSelectedLimit = this.options.itemLimit >= totalSelected;
 
@@ -637,18 +665,17 @@ const MegaAutoComplete = (() => {
     function makeUrl(autocompleteVal) {
         const hasData = Boolean(this.options.data);
         const hasQueryParam = Boolean(this.options.queryParam);
-        const method = this.options.method;
 
-        if (method === 'GET') {
-            if(hasData) {
-                this.options.data[this.options.queryParam] = autocompleteVal;
+        if (hasData) {
+            if (hasQueryParam) this.options.data[this.options.queryParam] = autocompleteVal;
 
-                return this.options.url + '?' + serialize(this.options.data);
-            }
+            return this.options.url + '?' + serialize(this.options.data);
+        }
 
-            if(hasQueryParam) return this.options.url + '?' + serialize({[this.options.queryParam]: autocompleteVal});
-
-            return this.options.url;
+        if (hasQueryParam) {
+            return this.options.url + '?' + serialize({
+                [this.options.queryParam]: autocompleteVal
+            });
         }
 
         return this.options.url;
@@ -667,6 +694,13 @@ const MegaAutoComplete = (() => {
 
             return element;
         }
+    }
+
+    function isMegaAutoCompleteElement(element) {
+        const isInputTag = element.tagName === 'INPUT';
+        const isAutoComplete = Array.from(element.classList).includes('mega-ac');
+
+        return isAutoComplete && isInputTag;
     }
 
     function serialize(object) {
