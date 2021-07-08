@@ -1,22 +1,24 @@
 const MegaAutoComplete = (() => {
-    const megaAutoComplete = new MegaAutoComplete();
+    const MegaAutoComplete = ModuleFactory(megaAutoComplete);
 
-    function MegaAutoComplete() {
-        this.options = {};
-        this.maxItemLimit = 5;
-        this.avgItemLimit = 3;
-        this.suggestions;
-        this.timeoutId;
-        this.autocompleteContainer = document.querySelectorAll('.mega-ac-container');
-        this.autocomplete = document.querySelectorAll('.mega-ac');
+    function megaAutoComplete() {
+        const Mega = null;
+        const options = {};
+        const maxItemLimit = 5;
+        const avgItemLimit = 3;
+        const suggestions = null;
+        const timeoutId = null;
+        const autocompleteContainer = document.querySelectorAll('.mega-ac-container');
+        const autocomplete = document.querySelectorAll('.mega-ac');
+
+        return { Mega, options, maxItemLimit, avgItemLimit, suggestions, timeoutId, autocompleteContainer, autocomplete };
     }
 
-    MegaAutoComplete.prototype.enable = function() {
+    megaAutoComplete.prototype.enable = function() {
         initMegaAutoComplete.call(this);
     }
 
     HTMLInputElement.prototype.megaAutoComplete = function(options = {}) {
-        const inMegaComplete = {...megaAutoComplete};
         const hasUrl = Boolean(options.url);
         const hasQueryParam = Boolean(options.queryParam);
         const hasData = Boolean(options.data);
@@ -24,18 +26,20 @@ const MegaAutoComplete = (() => {
         const hasItemLimit = Boolean(options.itemLimit);
 
         if (isMegaAutoCompleteElement(this) && hasUrl) {
-            inMegaComplete.options.url = options.url;
-            inMegaComplete.options.method = 'GET';
-            inMegaComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
-            inMegaComplete.options.data = (hasData) ? options.data : '';
-            inMegaComplete.options.matchFilter = hasFilter;
-            inMegaComplete.options.itemLimit = (hasItemLimit) ?
-             ((options.itemLimit > inMegaComplete.maxItemLimit) ? inMegaComplete.maxItemLimit : options.itemLimit) :
-             inMegaComplete.avgItemLimit;
-            inMegaComplete.options.getVal = options.getVal;
+            MegaAutoComplete.options.url = options.url;
+            MegaAutoComplete.options.method = 'GET';
+            MegaAutoComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
+            MegaAutoComplete.options.data = (hasData) ? options.data : '';
+            MegaAutoComplete.options.matchFilter = hasFilter;
+            MegaAutoComplete.options.itemLimit = (hasItemLimit) ?
+                ((options.itemLimit > MegaAutoComplete.maxItemLimit) ? MegaAutoComplete.maxItemLimit : options.itemLimit) :
+                MegaAutoComplete.avgItemLimit;
+            MegaAutoComplete.options.getVal = options.getVal;
         }
 
-        console.log(inMegaComplete === megaAutoComplete);
+        MegaAutoComplete.Mega = {...MegaAutoComplete.options};
+
+        return MegaAutoComplete.Mega;
     }
 
     HTMLInputElement.prototype.megaAutoCompleteVal = function() {
@@ -122,8 +126,8 @@ const MegaAutoComplete = (() => {
         const generateAutoCompleteClickEvent = autocomplete =>
             autocomplete.addEventListener('keyup', handleAutoCompleteKeyUpEvent.bind(this));
 
-        this.autocompleteContainer.forEach(createAutoCompleteComponent);
-        this.autocomplete.forEach(generateAutoCompleteClickEvent);
+        MegaAutoComplete.autocompleteContainer.forEach(createAutoCompleteComponent);
+        MegaAutoComplete.autocomplete.forEach(generateAutoCompleteClickEvent);
 
         document.addEventListener('click', handleAutoCompleteContainerBlurEvent.bind(this));
     }
@@ -212,7 +216,7 @@ const MegaAutoComplete = (() => {
         } = getAutoCompleteVariables.call(this, autocompleteContainer);
 
         const keyVal = event.key;
-        const hasUrl = Boolean(this.options.url);
+        const hasUrl = Boolean(MegaAutoComplete.Mega.url);
         const autocompleteVal = autocomplete.value;
         const autocompleteValLenght = autocomplete.value.length;
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
@@ -739,5 +743,16 @@ const MegaAutoComplete = (() => {
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => megaAutoComplete.enable());
+    function ModuleFactory(obj) {
+        const object = { ...obj() };
+
+        Object.setPrototypeOf(object, obj.prototype);
+
+        return object;
+    };
+
+    return MegaAutoComplete;
+
 })();
+
+document.addEventListener('DOMContentLoaded', () => MegaAutoComplete.enable());

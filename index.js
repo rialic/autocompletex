@@ -58,10 +58,9 @@ const Index = (() => {
 
     function setAutoCompleteTwo() {
         const optionsAutoCompleteTwo = {
-            url: Index.formTwo.getAttribute('action'), // https://jsonplaceholder.typicode.com/comments
+            url: Index.formTwo.getAttribute('action'), // https://jsonplaceholder.typicode.com/photos
             matchFilter: true,
-            data: {'postId': 1},
-            getVal: element => element.body
+            getVal: element => element.title
         };
 
         Index.autocompleteTwo.megaAutoComplete(optionsAutoCompleteTwo);
