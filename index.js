@@ -51,6 +51,7 @@ const Index = (() => {
             itemLimit: 1,
             data: {'postId': 1},
             getVal: element => element.body
+            // getVal: element => element.body
         };
 
         Index.autocompleteOne.megaAutoComplete(optionsAutoCompleteOne);

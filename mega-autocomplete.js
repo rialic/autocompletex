@@ -2,7 +2,6 @@ const MegaAutoComplete = (() => {
     const MegaAutoComplete = ModuleFactory(megaAutoComplete);
 
     function megaAutoComplete() {
-        const Mega = null;
         const options = {};
         const maxItemLimit = 5;
         const avgItemLimit = 3;
@@ -11,7 +10,7 @@ const MegaAutoComplete = (() => {
         const autocompleteContainer = document.querySelectorAll('.mega-ac-container');
         const autocomplete = document.querySelectorAll('.mega-ac');
 
-        return { Mega, options, maxItemLimit, avgItemLimit, suggestions, timeoutId, autocompleteContainer, autocomplete };
+        return { options, maxItemLimit, avgItemLimit, suggestions, timeoutId, autocompleteContainer, autocomplete };
     }
 
     megaAutoComplete.prototype.enable = function() {
@@ -19,6 +18,9 @@ const MegaAutoComplete = (() => {
     }
 
     HTMLInputElement.prototype.megaAutoComplete = function(options = {}) {
+        const key = Math.random().toString(36).substr(2);
+        const autocomplete = this;
+
         const hasUrl = Boolean(options.url);
         const hasQueryParam = Boolean(options.queryParam);
         const hasData = Boolean(options.data);
@@ -27,7 +29,6 @@ const MegaAutoComplete = (() => {
 
         if (isMegaAutoCompleteElement(this) && hasUrl) {
             MegaAutoComplete.options.url = options.url;
-            MegaAutoComplete.options.method = 'GET';
             MegaAutoComplete.options.queryParam = (hasQueryParam) ? options.queryParam : '';
             MegaAutoComplete.options.data = (hasData) ? options.data : '';
             MegaAutoComplete.options.matchFilter = hasFilter;
@@ -35,11 +36,13 @@ const MegaAutoComplete = (() => {
                 ((options.itemLimit > MegaAutoComplete.maxItemLimit) ? MegaAutoComplete.maxItemLimit : options.itemLimit) :
                 MegaAutoComplete.avgItemLimit;
             MegaAutoComplete.options.getVal = options.getVal;
+
+            const functionToString = (key, val) => (typeof val === 'function') ? val.toString() : val;
+            const optionStringfied = JSON.stringify(MegaAutoComplete.options, functionToString);
+
+            sessionStorage.setItem(key, optionStringfied);
+            autocomplete.dataset.options = key;
         }
-
-        MegaAutoComplete.Mega = {...MegaAutoComplete.options};
-
-        return MegaAutoComplete.Mega;
     }
 
     HTMLInputElement.prototype.megaAutoCompleteVal = function() {
@@ -214,9 +217,10 @@ const MegaAutoComplete = (() => {
             autocompleteList,
             autocompleteListItems,
         } = getAutoCompleteVariables.call(this, autocompleteContainer);
+        const options = JSON.parse(sessionStorage.getItem(autocomplete.dataset.options));
 
         const keyVal = event.key;
-        const hasUrl = Boolean(MegaAutoComplete.Mega.url);
+        const hasUrl = Boolean(options.url);
         const autocompleteVal = autocomplete.value;
         const autocompleteValLenght = autocomplete.value.length;
         const hasMoreThanThreeLetters = autocompleteValLenght >= 3;
@@ -320,26 +324,25 @@ const MegaAutoComplete = (() => {
         }
     }
 
-    async function fetchData(url, data) {
+    async function fetchData(url, options) {
         try {
             const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
-            const method = this.options.method;
 
-            const hasGetVal = Boolean(this.options.getVal);
-            const isStringGetVal = typeof this.options.getVal === 'string';
-            const isFunctionGetVal = typeof this.options.getVal === 'function';
+            const hasGetVal = Boolean(options.getVal);
+            const isStringGetVal = typeof options.getVal === 'string';
+            const isFunctionGetVal = typeof options.getVal === 'function';
 
-            const response = await fetch(url, { headers, method });
+            const response = await fetch(url, { headers, method: 'GET' });
 
             if (!response.ok) throw new Error('Não foi possível obter os dados da requisição');
 
             if (hasGetVal) {
-                if (isStringGetVal) return (await response.json())[this.options.getVal];
+                if (isStringGetVal) return [(await response.json())[options.getVal]];
 
                 if (isFunctionGetVal) {
                     const responseJSON = await response.json();
 
-                    return responseJSON.map(item => this.options.getVal(item));
+                    return responseJSON.map(item => options.getVal(item));
                 }
             }
 
@@ -355,9 +358,18 @@ const MegaAutoComplete = (() => {
         this.timeoutId = setTimeout(async () => {
             let filteredList;
 
-            const { autocompleteContainer, autocompleteList, autocompleteVal } = params;
-            const url = makeUrl.call(this, autocompleteVal);
-            const responseData = await fetchData.call(this, url, this.options.data);
+            const { autocomplete, autocompleteContainer, autocompleteList, autocompleteVal } = params;
+
+            const regexFunction = /function|\=>/g;
+            const stringToFunction = (key, val) => {
+                const isFunction = (key === 'getVal' && regexFunction.test(val));
+
+                return (isFunction) ? Function('"use strict";return (' + val + ')')() : val;
+            };
+            const options = JSON.parse(sessionStorage.getItem(autocomplete.dataset.options), stringToFunction);
+
+            const url = makeUrl.call(this, autocompleteVal, options);
+            const responseData = await fetchData.call(this, url, options);
             const hasRequestError = responseData.status === 'error';
             const generateList = (acc, item) => {
                 const hasItem = Boolean(item);
@@ -384,11 +396,11 @@ const MegaAutoComplete = (() => {
                 return acc;
             }
 
-            this.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : responseData;
+            MegaAutoComplete.suggestions = (hasRequestError) ? ['Não há resultados para essa pesquisa'] : responseData;
 
-            filteredList = (this.options.matchFilter) ?
-                this.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa']) :
-                this.suggestions.reduce(generateList, ['Não há resultados para essa pesquisa']);
+            filteredList = (options.matchFilter) ?
+                MegaAutoComplete.suggestions.reduce(generateFiltredList, ['Não há resultados para essa pesquisa']) :
+                MegaAutoComplete.suggestions.reduce(generateList, ['Não há resultados para essa pesquisa']);
 
             removeAutoCompleteList.call(this, autocompleteContainer);
             mountAutoCompleteList.call(this, autocompleteList, filteredList);
@@ -633,14 +645,15 @@ const MegaAutoComplete = (() => {
                 autocompleteSelectedCounter,
                 autocompleteSelectedValues
             } = getAutoCompleteVariables.call(this, autocompleteContainer);
+            const options = JSON.parse(sessionStorage.getItem(autocomplete.dataset.options));
 
             const totalSelected = Number(autocompleteSelectedCounter.dataset.total) + 1;
             const hasSelectedValues = Boolean(autocompleteSelectedValues.value);
             const selectedList = (hasSelectedValues) ? JSON.parse(autocompleteSelectedValues.value) : [];
             const isItemAlreadySelected = selectedList.includes(itemSelectedText.trim());
 
-            const isNotInRangeMaxLimit = this.options.itemLimit <= this.maxItemLimit;
-            const isNotInRangeSelectedLimit = this.options.itemLimit >= totalSelected;
+            const isNotInRangeMaxLimit = options.itemLimit <= this.maxItemLimit;
+            const isNotInRangeSelectedLimit = options.itemLimit >= totalSelected;
 
             autocomplete.value = '';
 
@@ -666,23 +679,23 @@ const MegaAutoComplete = (() => {
         return { define };
     }
 
-    function makeUrl(autocompleteVal) {
-        const hasData = Boolean(this.options.data);
-        const hasQueryParam = Boolean(this.options.queryParam);
+    function makeUrl(autocompleteVal, options) {
+        const hasData = Boolean(options.data);
+        const hasQueryParam = Boolean(options.queryParam);
 
         if (hasData) {
-            if (hasQueryParam) this.options.data[this.options.queryParam] = autocompleteVal;
+            if (hasQueryParam) options.data[options.queryParam] = autocompleteVal;
 
-            return this.options.url + '?' + serialize(this.options.data);
+            return options.url + '?' + serialize(options.data);
         }
 
         if (hasQueryParam) {
-            return this.options.url + '?' + serialize({
-                [this.options.queryParam]: autocompleteVal
+            return options.url + '?' + serialize({
+                [options.queryParam]: autocompleteVal
             });
         }
 
-        return this.options.url;
+        return options.url;
     }
 
     function makeElement(elementName, attributes = {}) {
