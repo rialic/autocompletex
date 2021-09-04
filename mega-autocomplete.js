@@ -325,7 +325,7 @@ const MegaAutoComplete = (() => {
     }
   }
 
-  async function fetchData(url, data) {
+  async function fetchData(url) {
     try {
       const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
       const method = this.options.method
