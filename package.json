@@ -1,0 +1,33 @@
+{
+  "name": "autocompletex",
+  "packageManager": "yarn@3.1.1",
+  "scripts": {
+    "dev": "yarn development",
+    "prod": "yarn production",
+    "wat": "yarn watch",
+    "development": "mix",
+    "watch": "mix watch",
+    "watch-poll": "mix watch -- --watch-options-poll=1000",
+    "hot": "mix watch --hot",
+    "production": "mix --production",
+    "vscode": "yarn dlx @yarnpkg/sdks vscode",
+    "package-destroy": "rm -Rf .yarn && rm -Rf .vscode && rm -Rf .editorconfig && rm -Rf .pnp.cjs && rm -Rf .pnp.loader.mjs rm -Rf .yarnrc.yml rm -Rf yarn.lock && rm -Rf node_modules"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.17.3",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/runtime": "^7.17.0",
+    "eslint": "^8.8.0",
+    "eslint-config-eslintx": "^1.0.3",
+    "laravel-mix": "^6.0.41",
+    "postcss": "^8.4.6",
+    "resolve-url-loader": "^5.0.0",
+    "sass": "^1.49.7",
+    "sass-loader": "^12.4.0",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2"
+  }
+}

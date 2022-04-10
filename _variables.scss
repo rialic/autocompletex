@@ -1,0 +1,289 @@
+@use "sass:map";
+@import "./_utilities";
+
+/*--------------------*\
+  VARIABLES
+\*--------------------*/
+$float-label-x: -6;
+$float-label-y: -18;
+
+$hover-color: #d4d4d4;
+$input-tag-color: #39a3f4;
+$checkbox-color: #39a3f4;
+$checkmark-color: #ffffff;
+$btn--color: #d4d4d4;
+
+/*--------------------*\
+  AUTOCOMPLETEX/ INPUT
+\*--------------------*/
+
+$acx-input-container: (
+    position: relative,
+    display: flex,
+    flex-wrap: wrap,
+    width: 100%,
+    padding: rem(6) rem(12),
+    font-size: rem(14),
+    font-weight: 400,
+    line-height: 1.5,
+    color: #212529,
+    background-color: #fff,
+    background-clip: padding-box,
+    border: rem(1) solid #ced4da,
+    -webkit-appearance: none,
+    -moz-appearance: none,
+    appearance: none,
+    border-radius: rem(4),
+    transition: (border-color .15s ease-in-out,box-shadow .15s ease-in-out)
+);
+
+$acx-input-container--open: (
+    border-bottom-left-radius: 0,
+    border-bottom-right-radius: 0
+);
+
+$acx-tag: (
+    position: relative,
+    flex-shrink: 1,
+    padding: 0 rem(25) 0 rem(3),
+    margin: rem(2) rem(4) 0 0,
+    border-radius: rem(4),
+    color: #fff,
+    background-color: $input-tag-color
+);
+
+$acx: (
+    flex: 1 1 0,
+    width: 100%,
+    min-width: rem(200),
+    padding: 0,
+    outline: none,
+    border:none,
+    background-image:none,
+    background-color:transparent,
+    box-shadow: none
+);
+
+$acx-focus: (
+    border-bottom-left-radius: 0,
+    border-bottom-right-radius: 0,
+    outline: none
+);
+
+$acx-icon-container: (
+    position: absolute,
+    display: flex,
+    justify-content: center,
+    align-items: center,
+    top: 0,
+    right: 0,
+    height: 100%
+);
+
+$acx-icon-arrow: (
+    content: '',
+    display: inline-block,
+    height: rem(10),
+    width: rem(10),
+    margin: 0 0 rem(3) rem(3),
+    border-top: rem(2) solid rgba(#212121, .8),
+    border-right: rem(2) solid rgba(#212121, .8),
+    transform: rotate(135deg)
+);
+
+$acx-icon-search: (
+    position: absolute,
+    color: rgba(#212121, .8),
+    top: rem(10),
+    width: rem(12),
+    height: rem(12),
+    border: solid rem(1) rgba(#212121, .8),
+    border-radius: 100%,
+    -webkit-transform: (rotate(-45deg)),
+    transform: (rotate(-45deg))
+);
+
+$acx-icon-search-before: (
+    content: '',
+    position: absolute,
+    top: rem(12),
+    left: rem(5),
+    height: rem(6),
+    width: rem(1),
+    background-color: rgba(#212121, .8)
+);
+
+$acx-icon-close: (
+    position: absolute,
+    content: '',
+    top: calc((100% /2) - (rem(10) / 2)),
+    height: rem(10),
+    width: rem(2),
+    background-color: rgba(#fff, .7)
+);
+
+/*--------------------*\
+  FLOAT LABELS
+\*--------------------*/
+$acx-float-container: (
+    position: relative,
+    display: flex,
+    flex-wrap: wrap,
+    width: 100%
+);
+
+$acx-float-label: (
+    position: absolute,
+    top: 0,
+    left: 0,
+    padding: map.get($acx, 'padding'),
+    pointer-events: none,
+    transition: 0.2s ease all
+);
+
+$label-text: (
+    background: #ffffff,
+);
+
+$label-focus: (
+    font-size: rem(12),
+    transform: translateY(rem($float-label-y)) translateX(rem($float-label-x))
+);
+
+/*--------------------*\
+  CONTAINER LIST
+\*--------------------*/
+$acx-list: (
+    position: absolute,
+    display: none,
+    flex-direction: column,
+    top: 100%,
+    left: 0,
+    width: map.get($acx-input-container, 'width'),
+    max-height: rem(250),
+    margin: 0,
+    padding: 0,
+    border-left: rem(1) solid #ced4da,
+    border-right: rem(1) solid #ced4da,
+    border-bottom: rem(1) solid #ced4da,
+    border-top-left-radius: 0,
+    border-top-right-radius: 0,
+    border-bottom-left-radius: rem(4),
+    border-bottom-right-radius: rem(4),
+    z-index: 99
+);
+
+$acx-list--open: (
+    display: flex
+);
+
+$acx-list-content: (
+    display: flex,
+    flex-direction: column,
+    overflow-y: auto
+);
+
+$acx-list-item: (
+    display: flex,
+    align-items: center,
+    padding: rem(10),
+    background-color: #fff,
+    cursor: pointer
+);
+
+$acx-list-item--hover: (
+    background-color: #ddd
+);
+
+$acx-list-item-hover: (
+    background-color: rgba($hover-color, .2)
+);
+
+/*--------------------*\
+  OK BUTTON
+\*--------------------*/
+$acx-btn: (
+    display: inline-block,
+    padding: rem(6),
+    border-radius: rem(4),
+    font-size: rem(14),
+    text-align: center,
+    text-decoration: none,
+    line-height: 1.5,
+    vertical-align: middle,
+    cursor: pointer,
+    -webkit-user-select: none,
+    -moz-user-select: none,
+    background-color: transparent,
+    user-select: none,
+    transition: (color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out)
+);
+
+$acx-btn--color: (
+    color: #212529,
+    background-color: rgba($btn--color, .1),
+    border: rem(1) solid rgba($btn--color, .7),
+);
+
+$acx-btn--color-hover: (
+    background-color: rgba($btn--color, .4),
+    border: rem(1) solid rgba($btn--color, .7)
+);
+
+$acx-btn--color-focus: (
+    box-shadow: 0 0 0 rem(4) rgb(211 212 213 / 35%)
+);
+
+/*--------------------*\
+  CHECKBOX CONTAINER
+\*--------------------*/
+$acx-checkbox-container: (
+    display: inline-flex,
+    cursor: pointer,
+    user-select: none,
+    vertical-align: bottom,
+    position: relative
+);
+
+$acx-checkbox: (
+    position: absolute,
+    border: 0,
+    clip: rect(0 0 0 0),
+    height: rem(1),
+    margin: rem(-1),
+    overflow: hidden,
+    padding: 0,
+    width: rem(1)
+);
+
+$acx-checkbox-box: (
+    border: rem(2) solid #ced4da,
+    background: #ffffff,
+    width: rem(20),
+    height: rem(20),
+    color: #495057,
+    border-radius: rem(3),
+    transition: (background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s)
+);
+
+$acx-checkbox-icon: (
+    transition-duration: 0.2s,
+    color: #ffffff,
+    font-size: rem(14),
+);
+
+$acx-checkbox-box--checked: (
+    border-color: $checkbox-color,
+    background: $checkbox-color
+);
+
+$acx-checkbox-icon--checked: (
+    content: '',
+    display: inline-block,
+    height: rem(12),
+    width: rem(6),
+    margin: 0 0 rem(5) rem(5),
+    border-bottom: rem(2) solid $checkmark-color,
+    border-right: rem(2) solid $checkmark-color,
+    transform: rotate(45deg)
+);

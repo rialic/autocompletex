@@ -1,0 +1,234 @@
+@import "./_variables";
+
+.acx-container {
+    position: relative;
+
+    & .acx-input-container {
+        @each $property, $value in $acx-input-container {
+            #{$property}: $value;
+        }
+
+        &.acx-input-container--open {
+            @each $property, $value in $acx-input-container--open {
+                #{$property}: $value;
+
+            }
+        }
+
+        & .acx-tag {
+            @each $property, $value in $acx-tag {
+                #{$property}: $value;
+            }
+
+            & .acx-icon-container {
+                @each $property, $value in $acx-icon-container {
+                    #{$property}: $value;
+                }
+                padding: 0 rem(8);
+                width: rem(22);
+                border-left: 1px solid rgba(#fff, .4);
+                cursor: pointer;
+
+                & .acx-icon-close::before, .acx-icon-close::after {
+                    @each $property, $value in $acx-icon-close {
+                        #{$property}: $value;
+                    }
+                }
+
+                & .acx-icon-close::before {
+                    transform: rotate(45deg);
+                }
+
+                & .acx-icon-close::after {
+                  transform: rotate(-45deg);
+                }
+            }
+        }
+
+        & .acx {
+            @each $property, $value in $acx {
+                #{$property}: $value;
+            }
+
+            &.acx--iconized {
+                padding-right: rem(20);
+            }
+        }
+
+        & .acx-icon-container {
+            @each $property, $value in $acx-icon-container {
+                #{$property}: $value;
+            }
+            width: rem(35);
+
+            & .acx-icon-arrow::before {
+                @each $property, $value in $acx-icon-arrow {
+                    #{$property}: $value;
+                }
+            }
+
+            & .acx-icon-search {
+                @each $property, $value in $acx-icon-search {
+                    #{$property}: $value;
+                }
+
+                &::before {
+                    @each $property, $value in $acx-icon-search-before {
+                        #{$property}: $value;
+                    }
+                }
+            }
+
+        }
+    }
+
+    & .acx-float-container {
+        @each $property, $value in $acx-float-container {
+            #{$property}: $value;
+        }
+
+        & .acx-float-label {
+            @each $property, $value in $acx-float-label {
+                #{$property}: $value;
+            }
+
+            & span {
+                @each $property, $value in $label-text {
+                    #{$property}: $value;
+                }
+            }
+        }
+
+        & .acx:focus {
+            @each $property, $value in $acx-focus {
+                #{$property}: $value;
+            }
+        }
+
+        & .acx:focus ~ .acx-float-label, .acx:not(:placeholder-shown) ~ .acx-float-label, .acx-tag ~ .acx-float-label{
+            @each $property, $value in $label-focus {
+                #{$property}: $value;
+            }
+
+            & span {
+                padding: 0 rem(6);
+            }
+        }
+    }
+
+    & .acx-list {
+        @each $property, $value in $acx-list{
+            #{$property}: $value;
+        }
+
+        &.acx-list--open {
+            @each $property, $value in $acx-list--open{
+                #{$property}: $value;
+            }
+        }
+
+        & .acx-list\:content {
+            @each $property, $value in $acx-list-content {
+                #{$property}: $value;
+            }
+
+            & .acx-list-item {
+                @each $property, $value in $acx-list-item {
+                    #{$property}: $value;
+                }
+
+                &.acx-list-item--hover {
+                    @each $property, $value in $acx-list-item--hover {
+                        #{$property}: $value;
+                    }
+                }
+
+                &:hover {
+                    @each $property, $value in $acx-list-item-hover {
+                        #{$property}: $value;
+                    }
+                }
+
+                & .acx-checkbox-container {
+                    @each $property, $value in $acx-checkbox-container {
+                        #{$property}: $value;
+                    }
+
+                    & .acx-checkbox {
+                        @each $property, $value in $acx-checkbox {
+                            #{$property}: $value;
+                        }
+
+                        & input[type="checkbox"] {
+                            -webkit-transform: scale(0);
+                            transform: scale(0);
+                        }
+                    }
+
+                    & .acx-checkbox-box {
+                        @each $property, $value in $acx-checkbox-box {
+                            #{$property}: $value;
+                        }
+
+                        & .acx-checkbox-icon {
+                            @each $property, $value in $acx-checkbox-icon {
+                                #{$property}: $value;
+                            }
+
+                            &.acx-checkbox-icon--checked::before {
+                                @each $property, $value in $acx-checkbox-icon--checked {
+                                    #{$property}: $value;
+                                }
+                            }
+                        }
+
+                        &.acx-checkbox-box--checked {
+                            @each $property, $value in $acx-checkbox-box--checked {
+                                #{$property}: $value;
+                            }
+                        }
+                    }
+                  }
+
+                  & label {
+                    font-size: rem(14);
+                    margin-left: 0.5rem;
+                    line-height: 1;
+                    cursor: pointer;
+                  }
+          }
+        }
+
+        & .acx-list\:footer{
+            display: flex;
+            justify-content: flex-end;
+            top: 100%;
+            padding: rem(10px);
+            border-top: rem(1px) solid #d4d4d4;
+        }
+    }
+
+    & .acx-btn {
+        @each $property, $value in $acx-btn {
+            #{$property}: $value;
+        }
+
+        &.acx-btn--color {
+            @each $property, $value in $acx-btn--color {
+                #{$property}: $value;
+            }
+
+            &:hover {
+                @each $property, $value in $acx-btn--color-hover {
+                    #{$property}: $value;
+                }
+            }
+
+            &:focus {
+                @each $property, $value in $acx-btn--color-focus {
+                    #{$property}: $value;
+                }
+            }
+        }
+    }
+}

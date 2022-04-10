@@ -1,4 +1,7 @@
+index.html
+index.js
+.vscode
+.yarn
 node_modules
-yarn.lock
-package.json
-.eslintrc.js
+.pnp.cjs
+.pnp.loader.mjs

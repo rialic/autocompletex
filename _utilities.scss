@@ -1,0 +1,11 @@
+/*--------------------*\
+  PIXEL TO REM
+\*--------------------*/
+
+@function stripUnit($value) {
+    @return $value / ($value * 0 + 1);
+}
+
+@function rem($value) {
+    @return #{stripUnit($value) / stripUnit(16px)}rem;
+}
